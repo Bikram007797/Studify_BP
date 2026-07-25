@@ -2048,20 +2048,25 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
   display: flex; align-items: center; gap: 10px;
   flex-wrap: wrap; font-size: 0.77rem; color: var(--text-secondary);
 }
-.tcard-timer-row { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.tcard-timer-row { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
 .tcard-timer-start {
-  flex: 1; padding: 9px; border: none; border-radius: 10px; font-weight: 700; font-size: 0.82rem;
-  font-family: var(--font-head); cursor: pointer;
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-bright)); color: #fff;
+ padding: 13px 24px; border: none; border-radius: 12px; font-weight: 700; font-size: 0.92rem;
+  font-family: var(--font-head); cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
+  background: var(--accent-green); color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
 }
 .tcard-timer-start:disabled { opacity: 0.4; cursor: not-allowed; }
 .tcard-timer-start:active { transform: scale(0.97); }
-.tcard-timer-countdown { flex: 1; font-family: var(--font-head); font-weight: 700; font-size: 0.86rem; color: var(--accent-gold); }
-.tcard-timer-stop {
-  padding: 8px 14px; border: none; border-radius: 10px; font-weight: 700; font-size: 0.8rem;
-  font-family: var(--font-head); cursor: pointer; background: var(--accent-red); color: #fff;
+.tcard-timer-controls { display: flex; gap: 8px; flex: 1; }
+.tcard-timer-pause, .tcard-timer-stop {
+  flex: 1; padding: 13px 10px; border: none; border-radius: 12px; font-weight: 700; font-size: 0.86rem;
+  font-family: var(--font-head); cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; gap: 6px;
 }
-.tcard-timer-stop:active { transform: scale(0.95); }
+.tcard-timer-pause { background: var(--accent-green); color: #fff; }
+.tcard-timer-stop { background: var(--accent-red); color: #fff; }
+.tcard-timer-pause:active, .tcard-timer-stop:active { transform: scale(0.95); }
+.tcard-timer-countdown { font-family: var(--font-head); font-weight: 700; font-size: 1.15rem; color: var(--accent-gold); white-space: nowrap; }
 
 /* ── Reusable glowing centered page title (same style as Mura Market) ── */
 .page-title-glow {
@@ -4239,13 +4244,17 @@ function renderTasks() {
       let timerRowHtml = '';
       if(!isCurrentDone) {
         if(isThisRunning) {
+          const pauseLabel = fsPaused ? '▶ RESUME' : '⏸ PAUSE';
           timerRowHtml = `<div class="tcard-timer-row" onclick="event.stopPropagation()">
-            <span class="tcard-timer-countdown" id="task-timer-display-${t.id}">⏳ …</span>
-            <button class="tcard-timer-stop" onclick="stopTaskLinkedTimer()">⏹ Stop</button>
+            <div class="tcard-timer-controls">
+              <button class="tcard-timer-pause" onclick="pauseTaskLinkedTimer()">${pauseLabel}</button>
+              <button class="tcard-timer-stop" onclick="stopTaskLinkedTimer()">⏹ STOP</button>
+            </div>
+            <span class="tcard-timer-countdown" id="task-timer-display-${t.id}">00:00:00</span>
           </div>`;
         } else {
           timerRowHtml = `<div class="tcard-timer-row" onclick="event.stopPropagation()">
-            <button class="tcard-timer-start" ${otherRunning ? 'disabled' : ''} onclick="startTaskLinkedTimer('${t.id}')">▶ START⏰${otherRunning ? ' (busy)' : ''}</button>
+            <button class="tcard-timer-start" ${otherRunning ? 'disabled' : ''} onclick="startTaskLinkedTimer('${t.id}')">▶ START 🔔${otherRunning ? ' (busy)' : ''}</button>
           </div>`;
         }
       }
@@ -6531,6 +6540,7 @@ function startTaskLinkedTimer(taskId) {
   linkedTaskId = taskId;
   forestStart();
   renderTasks();
+  updateTaskLinkedTimerDisplay();
 }
 
 async function stopTaskLinkedTimer() {
@@ -6543,14 +6553,27 @@ async function stopTaskLinkedTimer() {
   renderTasks();
 }
 
+function pauseTaskLinkedTimer() {
+  fsPause(); // same pause/resume toggle the fullscreen view uses — fully generic, safe to call from anywhere
+  renderTasks();
+}
+
+function fmtHMS(totalSeconds) {
+  const s = Math.max(0, Math.round(totalSeconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
+
 function updateTaskLinkedTimerDisplay() {
   if(!linkedTaskId) return;
   const el = document.getElementById('task-timer-display-' + linkedTaskId);
   if(!el) return; // that task's card isn't currently rendered — nothing to touch
   if(forestElapsed < forestSetSecs) {
-    el.textContent = '⏳ ' + fmtMins(forestSetSecs - forestElapsed) + ' left';
+    el.textContent = fmtHMS(forestSetSecs - forestElapsed);
   } else {
-    el.textContent = '🌲 +' + fmtMins(forestElapsed - forestSetSecs) + ' extra';
+    el.textContent = '+' + fmtHMS(forestElapsed - forestSetSecs);
   }
 }
 
