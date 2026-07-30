@@ -1952,7 +1952,11 @@ border: 2px solid #3d6b4a; background: #0f1a12; color: var(--accent-green);
 .da-compare-delta.flat { color: var(--text-muted); }
 .da-tree-progress-bar { background: var(--bg-elevated); border-radius: 20px; height: 14px; overflow: hidden; margin: 10px 0 12px; border: 1px solid var(--border); }
 .da-tree-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-gold), var(--accent-purple)); border-radius: 20px; transition: width 0.6s ease; }
-.da-tree-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.da-tree-grid { 
+  display: grid; 
+  grid-template-columns: repeat(5, 1fr); 
+  gap: 8px; 
+}
 .da-tree-icon { aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; background: var(--bg-elevated); border: 1px solid var(--border); }
 .da-tree-icon.unlocked { background: rgba(197,160,90,0.15); border-color: var(--accent-gold); }
 .da-tree-icon.locked { opacity: 0.28; filter: grayscale(1); }
@@ -11102,11 +11106,19 @@ if('serviceWorker' in navigator){
 })();
 
 // ── Tree Collection Display in Analytics ──
-function updateTreeCollectionDisplay() {
+async function updateTreeCollectionDisplay() {
   const grid = document.getElementById('tree-collection-grid');
   const summary = document.getElementById('tree-collection-summary');
   const fill = document.getElementById('tree-collection-fill');
   if (!grid) return;
+
+  // ⚠️ যদি ক্যাশে ডেটা না থাকে, তবে ডেটাবেস থেকে আগে ফেচ (Fetch) করে নেবে
+  if (!timerLogsCache || timerLogsCache.length === 0) {
+    if (currentUser) {
+      const snap = await db.collection('timerLogs').where('uid', '==', currentUser.uid).get();
+      timerLogsCache = snap.docs.map(d => d.data());
+    }
+  }
 
   const speciesCount = {};
   TREE_SPECIES.forEach(sp => speciesCount[sp.id] = 0);
@@ -11131,11 +11143,10 @@ function updateTreeCollectionDisplay() {
     const unlocked = unlockedTreeSpeciesSet.has(sp.id);
     const count = speciesCount[sp.id] || 0;
 
-    // আনলক করা থাকলে SVG এবং সংখ্যা দেখাবে, লকড থাকলে শুধু 🔒 আইকন
     if (unlocked) {
       return `
         <div class="da-tree-icon unlocked" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; aspect-ratio: 1; gap: 4px;">
-          <svg viewBox="0 0 120 160" style="width: 100%; height: 100%; max-height: 42px; display: block;">
+          <svg viewBox="0 0 120 160" style="width: 100%; height: 100%; max-height: 40px; display: block;">
             ${treeSVGMarkup(sp, 'da-tree-' + sp.id)}
           </svg>
           <div style="font-size: 0.7rem; font-weight: 700; color: var(--accent-gold); line-height: 1;">
@@ -11160,6 +11171,7 @@ function updateTreeCollectionDisplay() {
   if (summary) summary.textContent = `Unlocked ${unlockedCount} of ${totalSpecies} species`;
   if (fill) fill.style.width = pct + '%';
 }
+
 
 </script>
 </body>
