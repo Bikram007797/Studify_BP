@@ -795,10 +795,37 @@ select {
 .auth-logo {
   font-family: var(--font-head); font-size: 2.4rem; font-weight: 700;
   color: var(--accent-gold); text-align: center; letter-spacing: 4px; margin-bottom: 0.3rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.auth-logo-icon {
+  display: inline-block; opacity: 0; transform: scale(0.3) rotate(-15deg);
+  animation: authLogoIconIn 0.5s ease-out forwards;
+}
+.auth-logo-text {
+  display: inline-block; overflow: hidden; white-space: nowrap;
+  max-width: 0; opacity: 0; margin-left: 0;
+  animation: authLogoTextIn 0.7s ease-out forwards;
+  animation-delay: 0.55s;
+}
+@keyframes authLogoIconIn {
+  0%   { opacity: 0; transform: scale(0.3) rotate(-15deg); }
+  60%  { opacity: 1; transform: scale(1.15) rotate(5deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes authLogoTextIn {
+  0%   { max-width: 0;     opacity: 0; margin-left: 0; }
+  100% { max-width: 300px; opacity: 1; margin-left: 10px; }
 }
 .auth-tagline {
   color: var(--text-secondary); text-align: center;
   font-size: 0.84rem; margin-bottom: 2rem; letter-spacing: 1.5px;
+  opacity: 0; transform: translateY(6px);
+  animation: authTaglineIn 0.6s ease-out forwards;
+  animation-delay: 1.3s;
+}
+@keyframes authTaglineIn {
+  0%   { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 .auth-card {
   background: var(--bg-card); border: 1px solid var(--border);
@@ -2288,7 +2315,7 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
 
 <!-- AUTH SCREEN -->
 <div id="auth-screen" class="screen">
-  <div class="auth-logo">⛩️ VidyaMura</div>
+<div class="auth-logo"><span class="auth-logo-icon">⛩️</span><span class="auth-logo-text">VidyaMura</span></div>
   <div class="auth-tagline">CULTIVATE YOUR KNOWLEDGE IN HARMONY</div>
   <div class="auth-card">
     <div class="auth-tabs">
@@ -9496,6 +9523,8 @@ function renderMockTestGraphs() {
     const entries = g.entries || [];
     const avgScore = entries.length ? (entries.reduce((s,e)=>s+((e.obtained/e.total)*100),0)/entries.length) : 0;
     const avgAcc = entries.length ? (entries.reduce((s,e)=>s+(e.accuracy||0),0)/entries.length) : 0;
+    const totalCorrect = entries.reduce((s,e)=>s+(e.correct||0),0);
+    const totalWrong = entries.reduce((s,e)=>s+(e.wrong||0),0);
     let trendHtml = '';
     if(entries.length >= 2) {
       const last = (entries[entries.length-1].obtained/entries[entries.length-1].total)*100;
@@ -9508,6 +9537,7 @@ function renderMockTestGraphs() {
         <td>${e.mockName}</td>
         <td>${e.obtained}/${e.total}</td>
         <td>${e.accuracy}%</td>
+        <td><span style="color:var(--accent-green)">${e.correct||0}</span>/<span style="color:var(--accent-red)">${e.wrong||0}</span></td>
         <td>
           <div class="mtg-row-btns">
             <button class="mtg-edit-btn" onclick="editMockTestEntry('${g.id}','${e.id}')">✏️</button>
@@ -9527,11 +9557,12 @@ function renderMockTestGraphs() {
         <div class="mtg-stat-pill">Avg Score: <b>${avgScore.toFixed(1)}%</b></div>
         <div class="mtg-stat-pill">Avg Accuracy: <b>${avgAcc.toFixed(1)}%</b></div>
         <div class="mtg-stat-pill">Tests: <b>${entries.length}</b></div>
+        <div class="mtg-stat-pill">Correct/Wrong: <b style="color:var(--accent-green)">${totalCorrect}</b>/<b style="color:var(--accent-red)">${totalWrong}</b></div>
         ${trendHtml ? `<div class="mtg-stat-pill">Latest trend: ${trendHtml}</div>` : ''}
       </div>
       <div class="mtg-chart-wrap"><canvas id="mtg-canvas-${g.id}"></canvas></div>
       <table class="mtg-table">
-        <thead><tr><th>Mock Test</th><th>Score</th><th>Accuracy</th><th></th></tr></thead>
+<thead><tr><th>Mock Test</th><th>Score</th><th>Accuracy</th><th>C/W</th><th></th></tr></thead>
         <tbody>${rowsHtml}</tbody>
       </table>` : '<div class="mtg-empty">এখনো কোনো mock test data নেই — নিচে যোগ করো</div>'}
 
@@ -9543,7 +9574,10 @@ function renderMockTestGraphs() {
           <input type="number" id="mtg-input-obtained-${g.id}" placeholder="Obtained">
           <input type="number" id="mtg-input-total-${g.id}" placeholder="Total">
           <input type="number" id="mtg-input-accuracy-${g.id}" placeholder="Accuracy %" step="0.1">
-        </div>
+          </div>
+        <div class="mtg-form-row">
+          <input type="text" id="mtg-input-cw-${g.id}" placeholder="Correct/Wrong (e.g. 45/5)">
+          </div>
         <div class="mtg-form-btns">
           <button class="mtg-add-btn" id="mtg-submit-btn-${g.id}" onclick="saveMockTestEntryForm('${g.id}')">+ Add Entry</button>
           <button class="mtg-cancel-btn" style="display:none" id="mtg-cancel-btn-${g.id}" onclick="cancelMockTestEdit('${g.id}')">Cancel</button>
@@ -9624,9 +9658,14 @@ async function saveMockTestEntryForm(graphId) {
   const obtained = parseFloat(obtEl.value);
   const total = parseFloat(totEl.value);
   const accuracy = parseFloat(accEl.value);
+  const cwEl = document.getElementById('mtg-input-cw-' + graphId);
+  const cwParts = cwEl.value.trim().split('/');
+  const correct = parseInt(cwParts[0]);
+  const wrong = parseInt(cwParts[1]);
   if(!mockName) return toast('Mock Test-এর নাম দাও');
   if(isNaN(obtained) || isNaN(total) || total <= 0) return toast('সঠিক Obtained/Total সংখ্যা দাও');
   if(isNaN(accuracy) || accuracy < 0 || accuracy > 100) return toast('Accuracy 0-100-এর মধ্যে দাও');
+  if(cwParts.length !== 2 || isNaN(correct) || isNaN(wrong)) return toast('Correct/Wrong সঠিক ফরম্যাটে দাও (যেমন: 45/5)');
 
   const graphs = [...(currentUserData.mockTestGraphs || [])];
   const graph = graphs.find(g => g.id === graphId);
@@ -9635,10 +9674,10 @@ async function saveMockTestEntryForm(graphId) {
   const editingId = nameEl.dataset.editingId;
   if(editingId) {
     const entry = graph.entries.find(e => e.id === editingId);
-    if(entry) { entry.mockName = mockName; entry.obtained = obtained; entry.total = total; entry.accuracy = accuracy; }
+    if(entry) { entry.mockName = mockName; entry.obtained = obtained; entry.total = total; entry.accuracy = accuracy; entry.correct = correct; entry.wrong = wrong; }
     delete nameEl.dataset.editingId;
   } else {
-    graph.entries.push({ id: genMtgId('mte'), mockName, obtained, total, accuracy, addedAt: Date.now() });
+graph.entries.push({ id: genMtgId('mte'), mockName, obtained, total, accuracy, correct, wrong, addedAt: Date.now() });
   }
   await saveMockTestGraphs(graphs);
   toast(editingId ? '✅ Updated!' : '✅ Entry যোগ হলো!');
@@ -9653,6 +9692,7 @@ function editMockTestEntry(graphId, entryId) {
   document.getElementById('mtg-input-obtained-' + graphId).value = entry.obtained;
   document.getElementById('mtg-input-total-' + graphId).value = entry.total;
   document.getElementById('mtg-input-accuracy-' + graphId).value = entry.accuracy;
+  document.getElementById('mtg-input-cw-' + graphId).value = (entry.correct||0) + '/' + (entry.wrong||0);
   document.getElementById('mtg-submit-btn-' + graphId).textContent = '✅ Update Entry';
   document.getElementById('mtg-cancel-btn-' + graphId).style.display = '';
   document.getElementById('mtg-form-' + graphId).scrollIntoView({behavior:'smooth', block:'center'});
@@ -9665,6 +9705,7 @@ function cancelMockTestEdit(graphId) {
   document.getElementById('mtg-input-obtained-' + graphId).value = '';
   document.getElementById('mtg-input-total-' + graphId).value = '';
   document.getElementById('mtg-input-accuracy-' + graphId).value = '';
+  document.getElementById('mtg-input-cw-' + graphId).value = '';
   document.getElementById('mtg-submit-btn-' + graphId).textContent = '+ Add Entry';
   document.getElementById('mtg-cancel-btn-' + graphId).style.display = 'none';
 }
