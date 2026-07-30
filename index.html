@@ -2260,25 +2260,32 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
   transform: translate(-50%, -50%) rotate(90deg);
   transform-origin: center center;
   
-  /* Left padding 80px দেওয়া হয়েছে যাতে গ্রাফটি ওপরের হেডারের নিচে ঢাকা না পড়ে */
+  /* প্যাডিং আগের মতোই থাকছে যাতে হেডারের নিচে গ্রাফ ঢাকা না পড়ে */
   padding: 20px 20px 20px 80px; 
   box-sizing: border-box;
   
-  /* গ্রাফকে একদম সেন্টারে রাখার জন্য */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden; 
+  /* ⚠️ ওভারফ্লো অটো করে দেওয়া হলো যাতে স্ক্রল করা যায় */
+  overflow: auto; 
+  
+  /* Flex-এর বদলে block দেওয়া হলো যাতে স্ক্রলবার পারফেক্টলি কাজ করে */
+  display: block; 
+  text-align: center;
 }
 
-/* ⚠️ মূল ফিক্স: রোটেট অবস্থায় Canvas-কে ফোর্স করা যাতে সে পুরো স্ক্রিন জুড়ে যায় */
 .chart-fs-canvas-wrap.rotated canvas {
+  /* হাইট পুরো স্ক্রিন নেবে, ফলে মাঝে থাকবে এবং দেখতে ভালো লাগবে */
+  height: 100% !important; 
+  
+  /* উইডথ ডিফল্টভাবে স্ক্রিনের মাপ নেবে, কিন্তু মিনিমাম 800px চওড়া হবেই।
+     ফলে ডেটা বেশি হলে গ্রাফ স্ট্রেচ হবে না, বরং নিজে থেকে স্ক্রলবার চলে আসবে */
   width: 100% !important;
-  height: 100% !important;
+  min-width: 800px !important; 
+  
   max-width: none !important;
   max-height: none !important;
+  margin: 0 auto;
+  display: inline-block;
 }
-
 
 /* Journal Card Styles */
 .journal-card { background: var(--bg-card); border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); }
@@ -8354,16 +8361,6 @@ async function loadDrawerAnalytics() {
     compareCell('✅', 'Tasks', tasksThisMonth, tasksLastMonth, v => v) +
     compareCell('🌲', 'Trees', treesThisMonth, treesLastMonth, v => v);
 
-  // ৩.৩ Tree Collection — how many of the catalog's species have been unlocked
-  const unlockedSet = new Set(currentUserData?.unlockedTreeSpecies || ['pine']);
-  const treePct = Math.round((unlockedSet.size / TREE_SPECIES.length) * 100);
-  document.getElementById('tree-collection-summary').textContent = `${unlockedSet.size} / ${TREE_SPECIES.length} species unlocked`;
-  document.getElementById('tree-collection-fill').style.width = treePct + '%';
-  document.getElementById('tree-collection-grid').innerHTML = TREE_SPECIES.map(sp => {
-    const isUnlocked = unlockedSet.has(sp.id);
-    return `<div class="da-tree-icon ${isUnlocked ? 'unlocked' : 'locked'}" title="${sp.name}${isUnlocked ? '' : ' (locked)'}">${isUnlocked ? '🌲' : '🔒'}</div>`;
-  }).join('');
-
   // ৪. Heatmap Render — now a full year (GitHub-style: 7 rows = days of week,
   // columns = weeks), instead of just the last 28 days. heatMap already holds
   // full history (populated above with no date limit), so this only changes
@@ -11114,42 +11111,48 @@ function updateTreeCollectionDisplay() {
   const speciesCount = {};
   TREE_SPECIES.forEach(sp => speciesCount[sp.id] = 0);
 
-  // ১. timerLogsCache থেকে সফল গাছের যোগ এবং পেনাল্টি হওয়া গাছের বিয়োগ
+  // timerLogsCache থেকে সফল গাছের যোগ এবং পেনাল্টি হওয়া গাছের বিয়োগ
   (timerLogsCache || []).forEach(l => {
-    const spId = l.speciesId || 'pine'; // পুরনো লগে speciesId না থাকলে pine ধরা হবে
-    
+    const spId = l.speciesId || 'pine'; 
     if (l.completed !== false) {
-      // সফল সেশন: গাছ যোগ হবে
       speciesCount[spId] += logTrees(l);
     } else if (l.penalty) {
-      // বাতিল সেশন: পেনাল্টি হওয়া গাছ বিয়োগ হবে
       speciesCount[spId] -= l.penalty;
     }
   });
 
-  // কোনো গাছের সংখ্যা যেন বিয়োগ হয়ে মাইনাস (Negative) না হয়ে যায়, সেটা নিশ্চিত করা
+  // কোনো গাছের সংখ্যা যেন ০-এর নিচে না যায়
   Object.keys(speciesCount).forEach(k => {
     if (speciesCount[k] < 0) speciesCount[k] = 0;
   });
 
-  // ২. আসল SVG Tree এবং Plant Count দিয়ে HTML গ্রিড তৈরি করা
+  // আসল SVG Tree এবং Plant Count দিয়ে HTML গ্রিড তৈরি করা
   grid.innerHTML = TREE_SPECIES.map(sp => {
     const unlocked = unlockedTreeSpeciesSet.has(sp.id);
     const count = speciesCount[sp.id] || 0;
 
-    return `
-      <div class="da-tree-icon ${unlocked ? 'unlocked' : 'locked'}" style="flex-direction: column; padding: 4px; gap: 4px;">
-        <svg viewBox="0 0 120 160" style="width: 100%; height: 100%; max-height: 34px; display: block;">
-          ${treeSVGMarkup(sp, 'da-tree-' + sp.id)}
-        </svg>
-        <div style="font-size: 0.65rem; font-weight: 700; color: ${unlocked ? 'var(--accent-gold)' : 'var(--text-muted)'}; line-height: 1;">
-          ${count}
+    // আনলক করা থাকলে SVG এবং সংখ্যা দেখাবে, লকড থাকলে শুধু 🔒 আইকন
+    if (unlocked) {
+      return `
+        <div class="da-tree-icon unlocked" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; aspect-ratio: 1; gap: 4px;">
+          <svg viewBox="0 0 120 160" style="width: 100%; height: 100%; max-height: 42px; display: block;">
+            ${treeSVGMarkup(sp, 'da-tree-' + sp.id)}
+          </svg>
+          <div style="font-size: 0.7rem; font-weight: 700; color: var(--accent-gold); line-height: 1;">
+            ${count}
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    } else {
+      return `
+        <div class="da-tree-icon locked" style="display: flex; flex-direction: column; align-items: center; justify-content: center; aspect-ratio: 1;">
+          <div style="font-size: 1.2rem; color: var(--text-muted);">🔒</div>
+        </div>
+      `;
+    }
   }).join('');
 
-  // ৩. Progress Bar এবং Summary টেক্সট আপডেট করা
+  // Progress Bar এবং Summary টেক্সট আপডেট
   const unlockedCount = unlockedTreeSpeciesSet.size;
   const totalSpecies = TREE_SPECIES.length;
   const pct = Math.round((unlockedCount / totalSpecies) * 100);
