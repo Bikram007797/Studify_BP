@@ -2212,6 +2212,42 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
   height: 300px; 
   width: 100%;
 }
+.chart-fullscreen-btn {
+  position: absolute; top: 6px; right: 6px; z-index: 5;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.32);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.chart-fullscreen-btn:active { transform: scale(0.92); }
+
+.chart-fs-overlay {
+  position: fixed; inset: 0;
+  background: var(--bg-deep);
+  z-index: 700;
+  display: none;
+  flex-direction: column;
+}
+.chart-fs-overlay.active { display: flex; }
+.chart-fs-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 14px 16px;
+  padding-top: calc(14px + var(--safe-top));
+  border-bottom: 1px solid var(--border);
+}
+.chart-fs-title { font-family: var(--font-head); font-size: 0.95rem; font-weight: 700; color: var(--accent-gold); }
+.chart-fs-close-btn {
+  width: 34px; height: 34px; flex-shrink: 0;
+  border-radius: 9px; border: 1px solid var(--border);
+  background: var(--bg-elevated); color: var(--text-primary);
+  font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+}
+.chart-fs-canvas-wrap { flex: 1; min-height: 0; padding: 16px; }
+
 
 /* Journal Card Styles */
 .journal-card { background: var(--bg-card); border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); }
@@ -2319,7 +2355,7 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
 .mtg-stat-pill b { color: var(--text-primary); }
 .mtg-trend-up { color: var(--accent-green); font-weight: 700; }
 .mtg-trend-down { color: var(--accent-red); font-weight: 700; }
-.mtg-chart-wrap { height: 220px; margin-bottom: 14px; }
+.mtg-chart-wrap { height: 220px; margin-bottom: 14px; position: relative; }
 .mtg-form-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
 .mtg-form-row input {
   flex: 1; min-width: 80px; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--border);
@@ -2356,6 +2392,14 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
   <div class="loader-info">v5.0 · Developed by Bikr@m</div>
 </div>
 
+<!-- CHART FULLSCREEN OVERLAY -->
+<div id="chart-fs-overlay" class="chart-fs-overlay">
+  <div class="chart-fs-header">
+    <div class="chart-fs-title" id="chart-fs-title">Chart</div>
+    <button class="chart-fs-close-btn" onclick="closeChartFullscreen()">✕</button>
+  </div>
+  <div class="chart-fs-canvas-wrap" id="chart-fs-canvas-wrap"></div>
+</div>
 <!-- AUTH SCREEN -->
 <div id="auth-screen" class="screen">
 <div class="auth-logo"><span class="auth-logo-icon">⛩️</span><span class="auth-logo-text">VidyaMura</span></div>
@@ -9539,6 +9583,86 @@ document.addEventListener('visibilitychange', () => {
 
 // গ্লোবাল ভ্যারিয়েবল চার্টগুলোর ইন্সট্যান্স ধরে রাখার জন্য
 let advancedCharts = {};
+// ── Chart Fullscreen View ──
+// ── Chart Fullscreen View ──
+let fsOriginalParent = null;
+let fsOriginalNextSibling = null;
+let fsCurrentCanvas = null;
+let fsCurrentChart = null;
+
+const CHART_FULLSCREEN_MAP = {
+  taskTimeTrendChart:   { key: 'taskTimeTrend', title: '📊 Daily Tasks & Time (30-Day Trend)' },
+  priorityChart:        { key: 'priority',      title: '🎯 Priority Breakdown' },
+  subjectDoughnutChart: { key: 'doughnut',      title: '📚 Subject-Wise Focus' },
+  zendoTrendChart:      { key: 'zendo',         title: '🌲 Timer/Zendo Focus Trend (30-Day)' },
+  weekOverWeekChart:    { key: 'wow',           title: '📈 Week-over-Week Focus Trend' },
+  sessionLengthChart:   { key: 'sessionLen',    title: '⏱ Session Length Distribution' },
+  subjectStrengthChart: { key: 'strength',      title: '📚 Subject Strength (This Month)' },
+  scoreTrendChart:      { key: 'scoreTrend',    title: '📖 Productivity Score (30-Day Trend)' },
+  examStackChart:       { key: 'stack',         title: '🏆 Exam Readiness' },
+  timeOfDayChart:       { key: 'timeOfDay',     title: '⏰ Time of Day Productivity' }
+};
+
+function addChartFullscreenButtons() {
+  Object.keys(CHART_FULLSCREEN_MAP).forEach(canvasId => {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const container = canvas.parentElement;
+    if (!container || container.querySelector('.chart-fullscreen-btn')) return;
+    const { key, title } = CHART_FULLSCREEN_MAP[canvasId];
+    const btn = document.createElement('button');
+    btn.className = 'chart-fullscreen-btn';
+    btn.innerHTML = '⛶';
+    btn.title = 'Fullscreen';
+    btn.onclick = () => openChartFullscreen(key, title);
+    container.appendChild(btn);
+  });
+}
+
+// asol chart-instance ta receive kore, notun kore kichu clone kore na —
+// shudhu ashol canvas-take fullscreen wrap-e move kore deoy
+function _showChartFullscreen(chartInstance, title) {
+  if (!chartInstance || !chartInstance.canvas) return;
+  const canvasEl = chartInstance.canvas;
+
+  document.getElementById('chart-fs-title').textContent = title;
+  document.getElementById('chart-fs-overlay').classList.add('active');
+
+  fsOriginalParent = canvasEl.parentElement;
+  fsOriginalNextSibling = canvasEl.nextSibling;
+  fsCurrentCanvas = canvasEl;
+  fsCurrentChart = chartInstance;
+
+  document.getElementById('chart-fs-canvas-wrap').appendChild(canvasEl);
+  setTimeout(() => chartInstance.resize(), 50);
+}
+
+function closeChartFullscreen() {
+  document.getElementById('chart-fs-overlay').classList.remove('active');
+
+  if (fsCurrentCanvas && fsOriginalParent) {
+    if (fsOriginalNextSibling) fsOriginalParent.insertBefore(fsCurrentCanvas, fsOriginalNextSibling);
+    else fsOriginalParent.appendChild(fsCurrentCanvas);
+    if (fsCurrentChart) setTimeout(() => fsCurrentChart.resize(), 50);
+  }
+  fsCurrentCanvas = null; fsOriginalParent = null; fsOriginalNextSibling = null; fsCurrentChart = null;
+}
+
+function openChartFullscreen(chartKey, title) {
+  _showChartFullscreen(advancedCharts[chartKey], title);
+}
+
+function openMockTestChartFullscreen(graphId) {
+  const graph = (currentUserData.mockTestGraphs || []).find(g => g.id === graphId);
+  const title = graph ? ('📚 ' + graph.examName) : 'Mock Test Chart';
+  _showChartFullscreen(mockTestChartInstances[graphId], title);
+}
+
+// Rotate hole graph nijei resize hobe
+window.addEventListener('resize', () => { if (fsCurrentChart) fsCurrentChart.resize(); });
+window.addEventListener('orientationchange', () => { if (fsCurrentChart) setTimeout(() => fsCurrentChart.resize(), 250); });
+
+addChartFullscreenButtons();
 
 // Chart.js needs literal color strings, not CSS var() references — so this reads the *current*
 // theme's colors at render time instead of a color baked in for dark mode only. This is why
@@ -9613,7 +9737,10 @@ function renderMockTestGraphs() {
         <div class="mtg-stat-pill">Correct/Wrong: <b style="color:var(--accent-green)">${totalCorrect}</b>/<b style="color:var(--accent-red)">${totalWrong}</b></div>
         ${trendHtml ? `<div class="mtg-stat-pill">Latest trend: ${trendHtml}</div>` : ''}
       </div>
-      <div class="mtg-chart-wrap"><canvas id="mtg-canvas-${g.id}"></canvas></div>
+     <div class="mtg-chart-wrap">
+  <button class="chart-fullscreen-btn" onclick="openMockTestChartFullscreen('${g.id}')">⛶</button>
+  <canvas id="mtg-canvas-${g.id}"></canvas>
+</div>
       <table class="mtg-table">
 <thead><tr><th>Mock Test</th><th>Score</th><th>Accuracy</th><th>C/W</th><th></th></tr></thead>
         <tbody>${rowsHtml}</tbody>
