@@ -2250,12 +2250,33 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
 }
 .chart-fs-canvas-wrap { flex: 1; min-height: 0; padding: 16px; overflow-y: auto; }
 .chart-fs-canvas-wrap canvas { min-height: 420px; }
+/* ── Rotated Fullscreen Chart Fix ── */
 .chart-fs-canvas-wrap.rotated {
-  position: fixed; top: 50%; left: 50%;
-  width: 100vh; height: 100vw;
+  position: fixed; 
+  top: 50%; 
+  left: 50%;
+  width: 100vh; 
+  height: 100vw;
   transform: translate(-50%, -50%) rotate(90deg);
   transform-origin: center center;
-  overflow: auto; padding: 20px; box-sizing: border-box;
+  
+  /* Left padding 80px দেওয়া হয়েছে যাতে গ্রাফটি ওপরের হেডারের নিচে ঢাকা না পড়ে */
+  padding: 20px 20px 20px 80px; 
+  box-sizing: border-box;
+  
+  /* গ্রাফকে একদম সেন্টারে রাখার জন্য */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; 
+}
+
+/* ⚠️ মূল ফিক্স: রোটেট অবস্থায় Canvas-কে ফোর্স করা যাতে সে পুরো স্ক্রিন জুড়ে যায় */
+.chart-fs-canvas-wrap.rotated canvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
 }
 
 
@@ -2389,6 +2410,52 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
   font-size: 0.9rem; cursor: pointer; margin-bottom: 20px;
 }
 .mtg-empty { text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.82rem; }
+/* ── Mock Test Data Dropdown ── */
+.mtg-data-dropdown {
+  margin-top: 10px;
+}
+.mtg-data-summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: border-color 0.2s;
+  user-select: none;
+}
+.mtg-data-summary:hover {
+  border-color: var(--accent-purple);
+}
+.mtg-data-summary::-webkit-details-marker {
+  display: none; /* ডিফল্ট তীর চিহ্ন লুকানোর জন্য */
+}
+.mtg-data-summary::after {
+  content: '▾';
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+/* ড্রপ-ডাউন ওপেন হলে তীর চিহ্নটা ঘুরে যাবে */
+.mtg-data-dropdown[open] .mtg-data-summary::after {
+  transform: rotate(180deg);
+  color: var(--accent-gold);
+}
+.mtg-data-content {
+  margin-top: 14px;
+  padding: 0 4px;
+  animation: slideDownFade 0.3s ease-out;
+}
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 </style>
 </head>
@@ -6159,6 +6226,7 @@ function syncForestState() {
   if(!forestRunning) renderDialTree(0, 0);
   if(document.getElementById('tree-shop-modal')?.classList.contains('open')) renderTreeShop();
   autoHealAllTotals();
+  updateTreeCollectionDisplay();
 }
 function updateForestHUD() {
   const t = document.getElementById('forest-hud-trees');
@@ -6305,6 +6373,7 @@ async function confirmTreePurchase() {
   }
   closeTreeConfirm();
   renderTreeShop();
+  updateTreeCollectionDisplay();
 }
 async function selectTreeSpecies(id) {
   if(!currentUser) return;
@@ -7075,6 +7144,7 @@ cachedTotalFocusHoursAt = Date.now();
   if(tsEl) tsEl.textContent = logs.filter(l => l.completed !== false).length;
   timerLogsCache = logs;
   renderTimerHistory();
+  updateTreeCollectionDisplay();
 }
 
 // ═══════════════════════════════════════════
@@ -9778,6 +9848,11 @@ function renderMockTestGraphs() {
   <button class="chart-fullscreen-btn" onclick="openMockTestChartFullscreen('${g.id}')">⛶</button>
   <canvas id="mtg-canvas-${g.id}"></canvas>
 </div>
+<!-- ⚠️ নতুন ড্রপ-ডাউন রযাপার শুরু -->
+  <details class="mtg-data-dropdown">
+    <summary class="mtg-data-summary">📊 View / Add Test Data</summary>
+    
+    <div class="mtg-data-content">
       <table class="mtg-table">
 <thead><tr><th>Mock Test</th><th>Score</th><th>Accuracy</th><th>C/W</th><th></th></tr></thead>
         <tbody>${rowsHtml}</tbody>
@@ -9800,6 +9875,8 @@ function renderMockTestGraphs() {
           <button class="mtg-cancel-btn" style="display:none" id="mtg-cancel-btn-${g.id}" onclick="cancelMockTestEdit('${g.id}')">Cancel</button>
         </div>
       </div>
+      </details>
+  <!-- ⚠️ ড্রপ-ডাউন রযাপার শেষ -->
     </div>`;
   }).join('');
 
@@ -11026,6 +11103,61 @@ if('serviceWorker' in navigator){
   document.addEventListener('pointerup', release, {passive:true});
   document.addEventListener('pointercancel', release, {passive:true});
 })();
+
+// ── Tree Collection Display in Analytics ──
+function updateTreeCollectionDisplay() {
+  const grid = document.getElementById('tree-collection-grid');
+  const summary = document.getElementById('tree-collection-summary');
+  const fill = document.getElementById('tree-collection-fill');
+  if (!grid) return;
+
+  const speciesCount = {};
+  TREE_SPECIES.forEach(sp => speciesCount[sp.id] = 0);
+
+  // ১. timerLogsCache থেকে সফল গাছের যোগ এবং পেনাল্টি হওয়া গাছের বিয়োগ
+  (timerLogsCache || []).forEach(l => {
+    const spId = l.speciesId || 'pine'; // পুরনো লগে speciesId না থাকলে pine ধরা হবে
+    
+    if (l.completed !== false) {
+      // সফল সেশন: গাছ যোগ হবে
+      speciesCount[spId] += logTrees(l);
+    } else if (l.penalty) {
+      // বাতিল সেশন: পেনাল্টি হওয়া গাছ বিয়োগ হবে
+      speciesCount[spId] -= l.penalty;
+    }
+  });
+
+  // কোনো গাছের সংখ্যা যেন বিয়োগ হয়ে মাইনাস (Negative) না হয়ে যায়, সেটা নিশ্চিত করা
+  Object.keys(speciesCount).forEach(k => {
+    if (speciesCount[k] < 0) speciesCount[k] = 0;
+  });
+
+  // ২. আসল SVG Tree এবং Plant Count দিয়ে HTML গ্রিড তৈরি করা
+  grid.innerHTML = TREE_SPECIES.map(sp => {
+    const unlocked = unlockedTreeSpeciesSet.has(sp.id);
+    const count = speciesCount[sp.id] || 0;
+
+    return `
+      <div class="da-tree-icon ${unlocked ? 'unlocked' : 'locked'}" style="flex-direction: column; padding: 4px; gap: 4px;">
+        <svg viewBox="0 0 120 160" style="width: 100%; height: 100%; max-height: 34px; display: block;">
+          ${treeSVGMarkup(sp, 'da-tree-' + sp.id)}
+        </svg>
+        <div style="font-size: 0.65rem; font-weight: 700; color: ${unlocked ? 'var(--accent-gold)' : 'var(--text-muted)'}; line-height: 1;">
+          ${count}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // ৩. Progress Bar এবং Summary টেক্সট আপডেট করা
+  const unlockedCount = unlockedTreeSpeciesSet.size;
+  const totalSpecies = TREE_SPECIES.length;
+  const pct = Math.round((unlockedCount / totalSpecies) * 100);
+
+  if (summary) summary.textContent = `Unlocked ${unlockedCount} of ${totalSpecies} species`;
+  if (fill) fill.style.width = pct + '%';
+}
+
 </script>
 </body>
 </html>
