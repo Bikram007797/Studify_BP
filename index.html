@@ -1954,10 +1954,19 @@ border: 2px solid #3d6b4a; background: #0f1a12; color: var(--accent-green);
 .da-tree-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-gold), var(--accent-purple)); border-radius: 20px; transition: width 0.6s ease; }
 .da-tree-grid { 
   display: grid; 
-  grid-template-columns: repeat(5, 1fr); 
-  gap: 8px; 
+  /* ⚠️ minmax(0, 1fr) হলো ম্যাজিক ফিক্স, এটি বক্সগুলোকে কোনোভাবেই বাইরে বেরোতে দেবে না */
+  grid-template-columns: repeat(5, minmax(0, 1fr)); 
+  gap: 6px; 
+  width: 100%;
 }
-.da-tree-icon { aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; background: var(--bg-elevated); border: 1px solid var(--border); }
+.da-tree-icon {
+  aspect-ratio: 1; 
+  border-radius: 8px; 
+  background: var(--bg-elevated); 
+  border: 1px solid var(--border);
+  min-width: 0; /* এটাও বক্সকে বাইরে যাওয়া থেকে আটকাবে */
+  overflow: hidden;
+}
 .da-tree-icon.unlocked { background: rgba(197,160,90,0.15); border-color: var(--accent-gold); }
 .da-tree-icon.locked { opacity: 0.28; filter: grayscale(1); }
 .da-heatmap-year-wrap { overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
@@ -11138,26 +11147,26 @@ async function updateTreeCollectionDisplay() {
     if (speciesCount[k] < 0) speciesCount[k] = 0;
   });
 
-  // আসল SVG Tree এবং Plant Count দিয়ে HTML গ্রিড তৈরি করা
+ // আসল SVG Tree এবং Plant Count দিয়ে HTML গ্রিড তৈরি করা
   grid.innerHTML = TREE_SPECIES.map(sp => {
     const unlocked = unlockedTreeSpeciesSet.has(sp.id);
     const count = speciesCount[sp.id] || 0;
 
     if (unlocked) {
       return `
-        <div class="da-tree-icon unlocked" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; aspect-ratio: 1; gap: 4px;">
-          <svg viewBox="0 0 120 160" style="width: 100%; height: 100%; max-height: 40px; display: block;">
+        <div class="da-tree-icon unlocked" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px; gap: 2px;">
+          <svg viewBox="0 0 120 160" style="height: 32px; width: auto; display: block; flex-shrink: 0;">
             ${treeSVGMarkup(sp, 'da-tree-' + sp.id)}
           </svg>
-          <div style="font-size: 0.7rem; font-weight: 700; color: var(--accent-gold); line-height: 1;">
+          <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-gold); line-height: 1;">
             ${count}
           </div>
         </div>
       `;
     } else {
       return `
-        <div class="da-tree-icon locked" style="display: flex; flex-direction: column; align-items: center; justify-content: center; aspect-ratio: 1;">
-          <div style="font-size: 1.2rem; color: var(--text-muted);">🔒</div>
+        <div class="da-tree-icon locked" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div style="font-size: 1.1rem; color: var(--text-muted); opacity: 0.6;">🔒</div>
         </div>
       `;
     }
