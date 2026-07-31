@@ -11366,9 +11366,7 @@ async function updateReportCard() {
   let totalCreatedHours = 0;
   
   allTasks.forEach(t => {
-    // ⚠️ Note: যদি তোমার ডেটাবেসে টাস্কের সময় মিনিটে সেভ থাকে, তবে (timeVal / 60) করবে। 
-    // আমি আপাতত ঘণ্টায় (hours) আছে ধরেই যোগ করছি।
-    let timeVal = parseFloat(t.duration) || parseFloat(t.time) || parseFloat(t.estimatedTime) || 0;
+    let timeVal = parseFloat(t.hours) || 0; // task er asol field naam 'hours'
     totalCreatedHours += timeVal; 
   });
   totalCreatedHours = Math.max(1, totalCreatedHours);
@@ -11392,8 +11390,10 @@ async function updateReportCard() {
   let totalSessions = 0;
   let longestSession = 0; // in minutes
   try {
-    const tSnap = await db.collection('timerLogs').where('uid','==',currentUser.uid).get();
-    totalSessions = tSnap.docs.length;
+   const tSnap = await db.collection('timerLogs').where('uid','==',currentUser.uid).get();
+    // quit/penalty (completed:false) session gulo bad diye — Analytics-er 
+    // "Sessions Completed" canonical hisab-er sathe mile jay
+    totalSessions = tSnap.docs.filter(doc => doc.data().completed !== false).length;
     
     tSnap.docs.forEach(doc => {
       const secs = doc.data().seconds || 0;
@@ -11469,7 +11469,7 @@ async function updateReportCard() {
   
  
   document.getElementById('rc-trees').innerText = Math.round(currentUserData.totalTreesPlanted || 0);
-  document.getElementById('rc-items').innerText = inventory.length || 0;
+document.getElementById('rc-items').innerText = inventory.reduce((s, i) => s + (i.qty || 0), 0);
 
   // 8. Generated Date & Time
   const genNow = new Date();
