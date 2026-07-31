@@ -2107,6 +2107,49 @@ border: 2px solid #3d6b4a; background: #0f1a12; color: var(--accent-green);
   border: none; color: #0a0a0f; font-size: 0.9rem; font-weight: 700; cursor: pointer;
   font-family: var(--font-head);
 }
+.cert-btn {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1d2a22, #24352b 45%, #2f4536 100%);
+  border: 1px solid var(--accent-gold);
+  color: #f3d9a4;
+  transition: transform 0.15s ease;
+  animation: certGlow 2.6s ease-in-out infinite;
+}
+.cert-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg);
+  animation: certShine 3.2s ease-in-out infinite;
+}
+.cert-btn-icon {
+  display: inline-block;
+  animation: certIconPop 2.6s ease-in-out infinite;
+}
+.cert-btn:active { transform: scale(0.96); }
+.cert-btn-pressed { animation: certGlow 2.6s ease-in-out infinite, certBurst 0.22s ease; }
+
+@keyframes certGlow {
+  0%, 100% { box-shadow: 0 0 6px rgba(229, 192, 123, 0.15), 0 0 0 rgba(163, 203, 176, 0); }
+  50%      { box-shadow: 0 0 18px rgba(229, 192, 123, 0.45), 0 0 10px rgba(163, 203, 176, 0.25); }
+}
+@keyframes certShine {
+  0%   { left: -60%; }
+  50%  { left: 130%; }
+  100% { left: 130%; }
+}
+@keyframes certIconPop {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-2px) rotate(-6deg); }
+}
+@keyframes certBurst {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
 /* ── Task Card (Box) ── */
 .tcard {
     margin-bottom: 10px;
@@ -3288,13 +3331,200 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
         <input class="settings-input" type="password" id="settings-pass-confirm" placeholder="Confirm new password">
         <button class="settings-save-btn" onclick="saveSettingsPassword()">Change Password</button>
       </div>
-      <div class="settings-section">
-        <div class="settings-section-title">📋 My Report</div>
-        <p style="font-size: 0.79rem;color:var(--text-muted);margin-bottom:12px">Download your SCHOLAR'S SCROLL as an image.</p>
-        <button class="report-btn" onclick="downloadReport()">⬇ Download Report Card</button>
-</div>
+     <div class="settings-section">
+  <div class="settings-section-title">📋 Reports & Certificates</div>
+  <p style="font-size: 0.79rem;color:var(--text-muted);margin-bottom:12px">Download a keepsake of your progress and achievements.</p>
+
+  <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 700; margin-bottom: 4px; font-family: var(--font-head);">📜 My Report</div>
+  <p style="font-size: 0.75rem;color:var(--text-muted);margin-bottom:10px">Your SCHOLAR'S SCROLL — full stats, streaks and consistency.</p>
+  
+  <!-- 👇 এখান থেকে Report Card HTML শুরু 👇 -->
+  <div id="report-card-export" style="display: none; background: #121614; color: #eae6d9; width: 100%; max-width: 420px; padding: 32px; font-family: 'Nunito', sans-serif; border: 2px solid rgba(229, 192, 123, 0.4); border-radius: 24px; box-sizing: border-box; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    
+    <!-- Report Header -->
+    <div style="text-align: center; border-bottom: 1px solid rgba(229, 192, 123, 0.2); padding-bottom: 24px; margin-bottom: 24px;">
+      <div style="font-size: 2.5rem; margin-bottom: 8px;">⛩️</div>
+      <div style="font-family: 'Shippori Mincho', serif; font-size: 1.6rem; color: #e5c07b; font-weight: 700; letter-spacing: 2px; margin-bottom: 4px;">VIDYAMURA</div>
+      <div style="font-size: 0.8rem; color: #a88c56; letter-spacing: 4px; text-transform: uppercase;">Scholar's Scroll <span style="font-size: 0.6rem; color: #737063; letter-spacing: 1px; font-weight: bold;">v5.0</span></div>
+    </div>
+
+    <!-- User Profile Section -->
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 28px;">
+      <div style="width: 64px; height: 64px; border-radius: 50%; border: 2px solid #e5c07b; overflow: hidden; flex-shrink: 0; background: #88b394; display: flex; align-items: center; justify-content: center;">
+        <img id="rc-avatar" src="https://i.pravatar.cc/150?u=default" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div>
+        <div id="rc-user-name" style="font-family: 'Shippori Mincho', serif; font-size: 1.3rem; font-weight: 700; color: #eae6d9; margin-bottom: 4px;">Warrior Name</div>
+        <div id="rc-user-tagline" style="font-size: 0.8rem; color: #b5b09f; font-style: italic;">"Small steps, steady growth."</div>
+        <div id="rc-joined-date" style="font-size: 0.75rem; color: #88b394; margin-top: 4px; font-weight: 600;">🌱 Villager since Jul 2025</div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+      <div style="background: rgba(27, 33, 30, 0.6); border: 1px solid rgba(229, 192, 123, 0.15); border-radius: 12px; padding: 12px; text-align: center;">
+        <div id="rc-task-done" style="font-family: 'Shippori Mincho', serif; font-size: 1.4rem; font-weight: 700; color: #e5c07b; margin-bottom: 2px;">0</div>
+        <div style="font-size: 0.65rem; color: #737063; letter-spacing: 0.5px; text-transform: uppercase;">Tasks Done</div>
+      </div>
+      <div style="background: rgba(27, 33, 30, 0.6); border: 1px solid rgba(229, 192, 123, 0.15); border-radius: 12px; padding: 12px; text-align: center;">
+        <div id="rc-assignment-comp" style="font-family: 'Shippori Mincho', serif; font-size: 1.4rem; font-weight: 700; color: #e5c07b; margin-bottom: 2px;">0%</div>
+        <div style="font-size: 0.65rem; color: #737063; letter-spacing: 0.5px; text-transform: uppercase;">Assignments</div>
+      </div>
+      <div style="background: rgba(27, 33, 30, 0.6); border: 1px solid rgba(229, 192, 123, 0.15); border-radius: 12px; padding: 12px; text-align: center;">
+        <div id="rc-task-hours" style="font-family: 'Shippori Mincho', serif; font-size: 1.4rem; font-weight: 700; color: #6ba4b8; margin-bottom: 2px;">0h</div>
+        <div style="font-size: 0.65rem; color: #737063; letter-spacing: 0.5px; text-transform: uppercase;">Task Hours</div>
+      </div>
+      <div style="background: rgba(27, 33, 30, 0.6); border: 1px solid rgba(229, 192, 123, 0.15); border-radius: 12px; padding: 12px; text-align: center;">
+        <div id="rc-timer-time" style="font-family: 'Shippori Mincho', serif; font-size: 1.4rem; font-weight: 700; color: #6ba4b8; margin-bottom: 2px;">0h</div>
+        <div style="font-size: 0.65rem; color: #737063; letter-spacing: 0.5px; text-transform: uppercase;">Timer Hours</div>
+      </div>
+    </div>
+
+    <!-- Highlights Section -->
+    <div style="background: linear-gradient(145deg, rgba(37, 45, 41, 0.4), rgba(18, 22, 20, 0.8)); border: 1px solid rgba(136, 179, 148, 0.3); border-radius: 16px; padding: 16px; margin-bottom: 24px;">
+      <div style="font-size: 0.75rem; color: #88b394; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; text-align: center;">Performance Highlights</div>
+      
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem;">
+        <span style="color: #b5b09f;">Efficiency (Task/Time)</span>
+        <span id="rc-efficiency" style="color: #eae6d9; font-weight: 700;">0%</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem;">
+        <span style="color: #b5b09f;">Total Focus Sessions</span>
+        <span id="rc-total-sessions" style="color: #eae6d9; font-weight: 700;">0</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+        <span style="color: #b5b09f;">Longest Deep Focus</span>
+        <span id="rc-longest-session" style="color: #eae6d9; font-weight: 700;">0 min</span>
+      </div>
+    </div>
+
+    <!-- Consistency Bars -->
+    <div style="margin-bottom: 28px;">
+      <div style="font-size: 0.8rem; color: #e5c07b; font-weight: 700; margin-bottom: 12px; letter-spacing: 0.5px;">Consistency Tracker</div>
+      
+      <div style="margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #b5b09f; margin-bottom: 4px;">
+          <span>This Week</span><span id="rc-weekly-text">0%</span>
+        </div>
+        <div style="background: #252d29; border-radius: 6px; height: 6px; overflow: hidden;">
+          <div id="rc-weekly-bar" style="height: 100%; background: linear-gradient(90deg, #88b394, #a3cbb0); width: 0%; border-radius: 6px;"></div>
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #b5b09f; margin-bottom: 4px;">
+          <span>This Month</span><span id="rc-monthly-text">0%</span>
+        </div>
+        <div style="background: #252d29; border-radius: 6px; height: 6px; overflow: hidden;">
+          <div id="rc-monthly-bar" style="height: 100%; background: linear-gradient(90deg, #e5c07b, #d49764); width: 0%; border-radius: 6px;"></div>
+        </div>
       </div>
 
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #b5b09f; margin-bottom: 4px;">
+          <span>This Year</span><span id="rc-yearly-text">0%</span>
+        </div>
+        <div style="background: #252d29; border-radius: 6px; height: 6px; overflow: hidden;">
+          <div id="rc-yearly-bar" style="height: 100%; background: linear-gradient(90deg, #c4756c, #e5c07b); width: 0%; border-radius: 6px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guild/Aura Info -->
+    <div style="display: flex; justify-content: space-around; border-top: 1px dashed rgba(229, 192, 123, 0.2); border-bottom: 1px dashed rgba(229, 192, 123, 0.2); padding: 16px 0; margin-bottom: 24px;">
+      <div style="text-align: center;">
+        <div id="rc-current-aura" style="font-size: 0.9rem; color: #a3cbb0; font-weight: 700; margin-bottom: 2px;">🌑 Dormant</div>
+        <div style="font-size: 0.6rem; color: #737063; text-transform: uppercase; letter-spacing: 0.5px;">Current Aura</div>
+      </div>
+      <div style="width: 1px; background: rgba(229, 192, 123, 0.2);"></div>
+      <div style="text-align: center;">
+        <div id="rc-journey-level" style="font-size: 0.9rem; color: #e5c07b; font-weight: 700; margin-bottom: 2px;">Nava Shishya</div>
+        <div style="font-size: 0.6rem; color: #737063; text-transform: uppercase; letter-spacing: 0.5px;">Journey Level</div>
+      </div>
+      <div style="width: 1px; background: rgba(229, 192, 123, 0.2);"></div>
+      <div style="text-align: center;">
+        <div id="rc-prana-level" style="font-size: 0.9rem; color: #c4756c; font-weight: 700; margin-bottom: 2px;">⚡ 0.0</div>
+        <div style="font-size: 0.6rem; color: #737063; text-transform: uppercase; letter-spacing: 0.5px;">Prana</div>
+      </div>
+    </div>
+
+    <!-- Footer Stats -->
+    <div style="display: flex; justify-content: center; gap: 16px; font-size: 0.75rem; color: #b5b09f; margin-bottom: 20px;">
+      <span>✨ <span id="rc-total-xp" style="font-weight: 700; color: #eae6d9;">0</span> XP</span>
+      <span>🌲 <span id="rc-trees" style="font-weight: 700; color: #eae6d9;">0</span> Trees</span>
+      <span>🎒 <span id="rc-items" style="font-weight: 700; color: #eae6d9;">0</span> Items</span>
+    </div>
+
+    <!-- Date / Signature -->
+    <div id="rc-date" style="text-align: center; font-size: 0.7rem; color: #737063; font-style: italic;">
+      Generated on --/--/----
+    </div>
+
+  </div>
+  <!-- 👆 Report Card HTML শেষ 👆 -->
+
+  <button class="report-btn" onclick="downloadReport()">⬇ Download Report Card</button>
+
+  <div style="border-top: 1px dashed var(--border); margin: 18px 0 14px;"></div>
+
+  <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 700; margin-bottom: 4px; font-family: var(--font-head);">🎓 My Certificate</div>
+  <p style="font-size: 0.75rem;color:var(--text-muted);margin-bottom:12px">Your SCROLL OF MASTERY — rank, level & journey, formally sealed.</p>
+  <button class="report-btn cert-btn" onclick="handleCertificateClick(this)"><span class="cert-btn-icon">🎓</span> Download Certificate</button>
+</div>
+
+<!-- 👇 Updated Hidden Certificate Layout 👇 -->
+<div id="certificate-export" style="display: none; width: 900px; height: 650px; background: radial-gradient(circle at center, #1b211e 0%, #121614 100%); color: #eae6d9; font-family: 'Nunito', sans-serif; border: 8px solid #2a332d; outline: 2px solid #e5c07b; outline-offset: -12px; padding: 40px; box-sizing: border-box; text-align: center; position: relative; overflow: hidden;">
+  
+  <!-- Corner Decorations -->
+  <div style="position: absolute; top: 15px; left: 15px; font-size: 2rem; opacity: 0.5;">⛩️</div>
+  <div style="position: absolute; top: 15px; right: 15px; font-size: 2rem; opacity: 0.5;">⛩️</div>
+  <div style="position: absolute; bottom: 15px; left: 15px; font-size: 2rem; opacity: 0.5;">⛩️</div>
+  <div style="position: absolute; bottom: 15px; right: 15px; font-size: 2rem; opacity: 0.5;">⛩️</div>
+
+  <!-- Header -->
+  <div style="font-family: 'Shippori Mincho', serif; font-size: 2.2rem; color: #e5c07b; letter-spacing: 6px; margin-top: 10px;">VIDYAMURA</div>
+  <div style="font-size: 0.9rem; color: #a88c56; letter-spacing: 10px; text-transform: uppercase; margin-bottom: 35px; margin-top: 5px;">Scroll of Mastery</div>
+
+  <div style="font-size: 1.1rem; color: #b5b09f; margin-bottom: 10px; font-style: italic;">This honor is hereby bestowed upon</div>
+  
+  <!-- Name -->
+  <div id="cert-user-name" style="font-family: 'Shippori Mincho', serif; font-size: 3.5rem; color: #eae6d9; font-weight: 700; margin-bottom: 25px; border-bottom: 2px solid rgba(229, 192, 123, 0.4); display: inline-block; padding: 0 50px; padding-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+    Warrior Name
+  </div>
+
+ 
+  <!-- Description Body (সব ডাটা এখানে যোগ করা হয়েছে) -->
+  <div style="font-size: 1.05rem; color: #b5b09f; line-height: 1.9; margin-bottom: 40px; padding: 0 60px;">
+    Across <span id="cert-journey-days" style="color: #e5c07b; font-weight: 700; font-size: 1.3rem; font-family: 'Shippori Mincho', serif;">0 days</span> of quiet, unwavering practice, this warrior has walked the path of discipline and mastered the inner self — rising to the prestigious rank of <span id="cert-rank" style="color: #e5c07b; font-size: 1.4rem; font-weight: 700; font-family: 'Shippori Mincho', serif;">Aura</span> and reaching Journey Level <span id="cert-journey-level" style="color: #e5c07b; font-weight: bold;">Lv.0</span>.
+    <br><br>
+    Through steadfast dedication, they have upheld an overall task completion of <span id="cert-task-comp" style="color: #6ba4b8; font-weight: bold; font-size: 1.2rem;">0%</span> and a work efficiency of <span id="cert-efficiency" style="color: #6ba4b8; font-weight: bold; font-size: 1.2rem;">0%</span>. Their tireless efforts have amassed <span id="cert-xp" style="color: #88b394; font-weight: bold; font-size: 1.2rem;">0 XP</span> and nurtured <span id="cert-trees" style="color: #88b394; font-weight: bold; font-size: 1.2rem;">0 Trees</span> of focus in our village.
+  </div>
+
+  <!-- Footer Signatures (Fixed at the bottom) -->
+  <div style="position: absolute; bottom: 45px; left: 80px; right: 80px; display: flex; justify-content: space-between; align-items: flex-end;">
+    
+    <!-- Date Block -->
+    <div style="text-align: center; width: 160px;">
+      <div id="cert-date" style="font-size: 1.2rem; color: #eae6d9; border-bottom: 1px solid #737063; padding-bottom: 5px;">--/--/----</div>
+      <div style="font-size: 0.75rem; color: #737063; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px;">Date of Issue</div>
+    </div>
+    
+    <!-- Red Stamp (Hanko Seal) -->
+    <div style="width: 70px; height: 70px; border: 3px solid #c4756c; border-radius: 8px; display: flex; align-items: center; justify-content: center; transform: rotate(-5deg); opacity: 0.85; position: absolute; left: 50%; bottom: 0px; margin-left: -35px;">
+      <div style="font-family: 'Shippori Mincho', serif; color: #c4756c; font-size: 2rem; font-weight: bold;">印</div>
+    </div>
+
+    <!-- Signature Block -->
+    <div style="text-align: center; width: 160px;">
+      <div style="font-family: 'Brush Script MT', cursive; font-size: 2.2rem; color: #eae6d9; border-bottom: 1px solid #737063; padding-bottom: 5px; line-height: 0.8;">Buddha</div>
+      <div style="font-size: 0.75rem; color: #737063; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px;">Village Owner</div>
+    </div>
+  </div>
+  
+</div>
+<!-- 👆 Certificate Layout End 👆 -->
+      </div>
+  
     <!-- ABOUT ME -->
     <div class="drawer-tab-content" id="drawer-about">
 <div class="settings-section" style="border:1px solid var(--border-bright);border-radius:14px;padding:18px;background:linear-gradient(135deg,rgba(136,179,148,0.07),rgba(212,168,75,0.05))">
@@ -3663,6 +3893,7 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-firestore-compat.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <script>
 // ═══════════════════════════════════════════
@@ -3924,6 +4155,7 @@ async function startListeners() {
       try { syncForestState(); } catch(e) { console.error('syncForestState failed:', e); }
       try { renderMockTestGraphs(); } catch(e) { console.error('renderMockTestGraphs failed:', e); }
       try { if(currentCourseId) refreshCourseDetail(); } catch(e) { console.error('refreshCourseDetail failed:', e); }
+      try { updateReportCard(); } catch(e) { console.error('updateReportCard failed:', e); }
     }
   });
 
@@ -3934,6 +4166,7 @@ async function startListeners() {
     renderHomeTasks();
     updateProfile();
     refreshWeeklyChallenge();
+    try { updateReportCard(); } catch(e) { console.error('updateReportCard failed:', e); }
   });
 
   // Partner listener (Arena tab comparison)
@@ -3977,6 +4210,7 @@ if(partnerData) {
     }
     refreshCoursesList();
     if(currentCourseId) refreshCourseDetail();
+    try { updateReportCard(); } catch(e) { console.error('updateReportCard failed:', e); }
   }
 });
 
@@ -7069,13 +7303,12 @@ async function getTotalFocusHours(forceRefresh) {
 // lastSeenAnnouncement won't match the new ID) will see it once again; users
 // who already saw an older one won't see it a second time for that same ID.
 // ═══════════════════════════════════════════════════════════
-const CURRENT_ANNOUNCEMENT_ID = 'mock-test-tracker-v1';
+const CURRENT_ANNOUNCEMENT_ID = 'report-card-download-v1';
 const CURRENT_ANNOUNCEMENT = {
-  title: '📝 নতুন Feature: Mock Test Tracker!',
-  body: `Analytics tab-এ এখন একটা নতুন <b>"Mock Test Tracker"</b> section আছে।<br><br>
-    নিজের mock test-এর result (Exam Name, Mock Test Name, Obtained, Total, Accuracy) manually যোগ করে সুন্দর graph-এ progress track করতে পারবে। একই সাথে আলাদা আলাদা exam-এর জন্য একাধিক graph-ও বানানো যাবে ("+ Add Graph" দিয়ে)।<br><br>
-    যেকোনো data ভুল হলে ✏️ দিয়ে edit বা 🗑️ দিয়ে delete করে নিতে পারবে। প্রতিটা graph-এর ওপরে average score, average accuracy, আর তোমার latest trend (▲/▼) দেখাবে।`
-};
+  title: '📝 নতুন Feature: New Report Card & Certificate Download!',
+  body: `Settings tab-এ এখন একটা নতুন <b>"Report Card / Certificate Download "</b> section আছে।<br><br>তোমার overall progress এর উপর ভিত্তি করে বানানো, এগুলি Download করে তুমি তোমার progress ও achievements কে future এর জন্য Save রাখতে পারো।।<br><br>
+    একবার ঘুরে দেখে এসো কেমন লাগছে।।`
+    };
 let featureAnnouncementChecked = false;
 function checkFeatureAnnouncement() {
   if(featureAnnouncementChecked || !currentUserData) return;
@@ -8802,124 +9035,35 @@ async function saveSettingsPassword() {
   }
 }
 
-// ── REPORT CARD ──
+// ═══════════════════════════════════════════
+// DOWNLOAD REPORT CARD AS IMAGE
+// ═══════════════════════════════════════════
 async function downloadReport() {
-  if(!currentUserData || !currentUser) return;
-  toast('⏳ Preparing report...');
+  const reportCard = document.getElementById('report-card-export');
+  if (!reportCard || !currentUserData) return;
 
-  const xp = currentUserData.xp || 0;
-  const lv = getGuildLevel(xp);
-  const equipped = currentUserData.guildEquipped || [];
-  const inventory = currentUserData.guildInventory || [];
-  const power = getGuildPower(equipped, inventory);
-  const rank = getGuildRankNew(power, xp);
-  const totalDone = currentUserData.totalDone || 0;
-  const totalHours = currentUserData.totalHours || 0;
+  toast('⏳ Preparing your Report Card...');
 
-  let weeklyAvgTasks = 0, weeklyAvgTime = 0;
-  try {
-    const myDone = allTasks.filter(t=>(t.completions||[]).some(c=>c.endsWith('_'+currentUser.uid)));
-    if(myDone.length > 0) {
-      const dates = myDone.flatMap(t=>(t.completions||[]).filter(c=>c.endsWith('_'+currentUser.uid)).map(c=>c.split('_')[0]));
-      dates.sort();
-      const weeks = Math.max(1, Math.ceil((new Date()-new Date(dates[0]))/(7*24*60*60*1000)));
-      weeklyAvgTasks = (totalDone/weeks).toFixed(1);
-      weeklyAvgTime = (totalHours/weeks).toFixed(1);
-    }
-  } catch(e) {}
+  // Download-e click korar sathe sathe shob theke fresh data (assignment %, 
+  // trees, date/time soho) diye report card recalculate kore neowa hocche
+  try { await updateReportCard(); } catch(e) { console.error('updateReportCard failed:', e); }
 
-  let timerTotal = 0;
-  try {
-    const tSnap = await db.collection('timerLogs').where('uid','==',currentUser.uid).get();
-    timerTotal = tSnap.docs.reduce((s,d)=>s+(d.data().seconds||0)/3600,0);
-  } catch(e) {}
-
-  // Build report HTML
- const todayStr2 = getLocalDateString();
-  const curMonthStr2 = todayStr2.slice(0,7);
-  const curYearStr2 = todayStr2.slice(0,4);
-  const {mon:mon2, sun:sun2} = getCurrentWeekRange();
-  const arenaTasks2 = allTasks;
-  const uid2 = currentUser.uid;
-  function countDone2(filter) {
-    return arenaTasks2.filter(t=>(t.completions||[]).some(c=>{
-      if(!c.endsWith('_'+uid2)) return false;
-      const dk=c.split('_')[0];
-      if(filter==='daily') return dk===todayStr2;
-      if(filter==='weekly'){const d=new Date(dk);return d>=mon2&&d<=sun2;}
-      if(filter==='monthly') return dk.startsWith(curMonthStr2);
-      if(filter==='yearly') return dk.startsWith(curYearStr2);
-      return false;
-    })).length;
+  // 🌟 ১. প্রোফাইল ছবি বসানোর কোড (এখানে যোগ করা হলো) 🌟
+  const avatarEl = document.getElementById('rc-avatar');
+  if (avatarEl) {
+    // ইউজারের আপলোড করা ছবি থাকলে বসাবে, নাহলে ডিফল্ট ডামি ছবি
+    avatarEl.src = currentUserData.avatarUrl || 'https://i.pravatar.cc/150?u=default';
   }
-  const totalD2 = arenaTasks2.filter(t=>!t.dueDate||t.dueDate===todayStr2).length||1;
-  const totalW2 = arenaTasks2.filter(t=>{if(!t.dueDate)return false;const d=new Date(t.dueDate+'T00:00:00');return d>=mon2&&d<=sun2;}).length||1;
-  const totalM2 = arenaTasks2.filter(t=>t.dueDate&&t.dueDate.startsWith(curMonthStr2)).length||1;
-  const totalY2 = arenaTasks2.filter(t=>t.dueDate&&t.dueDate.startsWith(curYearStr2)).length||1;
-  const dPct=Math.min(100,Math.round(countDone2('daily')/totalD2*100));
-  const wPct=Math.min(100,Math.round(countDone2('weekly')/totalW2*100));
-  const mPct=Math.min(100,Math.round(countDone2('monthly')/totalM2*100));
-  const yPct=Math.min(100,Math.round(countDone2('yearly')/totalY2*100));
 
-  // Avatar — base64 convert (cross-origin er jonno)
-  let avatarHtmlReport = `<div style="width:60px;height:60px;border-radius:50%;border:2px solid #d4a84b;margin:0 auto 8px;background:linear-gradient(135deg,#7c5cbf,#d4a84b);display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:#fff;font-weight:700">${(currentUserData.name||'?').charAt(0).toUpperCase()}</div>`;
-  if(currentUserData.avatarUrl) {
-  try {
-    const blob = await fetch(currentUserData.avatarUrl, {mode:'cors'}).then(r=>r.blob());
-    const b64 = await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(blob);});
-    avatarHtmlReport = `<div style="width:60px;height:60px;border-radius:50%;border:2px solid #d4a84b;margin:0 auto 8px;overflow:hidden"><img src="${b64}" style="width:100%;height:100%;object-fit:cover"></div>`;
-  } catch(e) {
-    // fallback — avatar emoji/initial with green background
-    const initial = (currentUserData.name||'?').charAt(0).toUpperCase();
-    avatarHtmlReport = `<div style="width:60px;height:60px;border-radius:50%;border:2px solid #4ade80;margin:0 auto 8px;background:linear-gradient(135deg,#166534,#15803d);display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:#fff;font-weight:700">${initial}</div>`;
-  }
-}
+  // (তোমার অন্যান্য স্ট্যাটস বা ডাটা ইনজেক্ট করার কোডগুলো এখানে যেমন ছিল তেমনই থাকবে)
+  document.getElementById('rc-user-name').innerText = currentUserData.name || 'Warrior';
+  // ... বাকি ডাটা ...
 
-  const barStyle = (pct, color='#7c5cbf') => `<div style="flex:1;background:rgba(255,255,255,0.08);border-radius:4px;height:8px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${color};border-radius:4px"></div></div>`;
-
-  const reportHtml = `
-    <div style="width:360px;background:#0a0a0f;border:2px solid #d4a84b;border-radius:20px;padding:28px 24px;font-family:Inter,sans-serif">
-      <div style="text-align:center;margin-bottom:16px">
-        <div style="font-family:Georgia,serif;font-size:1.3rem;color:#d4a84b;font-weight:700">⛩️ VidyaMura</div>
-        <div style="font-size: 0.74rem;color:#5a5445;letter-spacing:2px;margin-top:2px">SCHOLAR'S SCROLL</div>
-      </div>
-      <div style="text-align:center;margin-bottom:16px">
-        ${avatarHtmlReport}
-        <div style="font-family:Georgia,serif;font-size:1rem;color:#f0eadc;font-weight:700">${currentUserData.name||'—'}</div>
-        <div style="font-size: 0.76rem;color:#7c5cbf;margin-top:2px">Lv.${lv.level} ${lv.name} · ${rank.name}</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-        ${[
-          ['Tasks Done', totalDone],
-          ['Task Hours', totalHours.toFixed(1)+'h'],
-          ['Timer Hours', timerTotal.toFixed(1)+'h'],
-          ['Total XP', xp],
-          ['Weekly Avg Tasks', weeklyAvgTasks],
-          ['Weekly Avg Time', weeklyAvgTime+'h'],
-          ['🌱 Journey Level', 'Lv.'+lv.level],
-          ['🌟 Aura', rank.name],
-        ].map(([l,v])=>`<div style="background:rgba(212,168,75,0.08);border:1px solid rgba(212,168,75,0.15);border-radius:10px;padding:10px;text-align:center"><div style="font-size:1rem;font-weight:700;color:#d4a84b">${v}</div><div style="font-size: 0.68rem;color:#5a5445;margin-top:2px">${l}</div></div>`).join('')}
-      </div>
-      <div style="background:rgba(124,92,191,0.08);border:1px solid rgba(124,92,191,0.2);border-radius:12px;padding:14px;margin-bottom:16px">
-        <div style="font-size: 0.74rem;color:#7c5cbf;font-weight:700;letter-spacing:1px;margin-bottom:10px">⚔ ARENA STATS</div>
-        ${[['Daily',dPct,'#3ab5c8'],['Weekly',wPct,'#7c5cbf'],['Monthly',mPct,'#d4a84b'],['Yearly',yPct,'#e08840']].map(([lbl,pct,col])=>`
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
-          <div style="font-size: 0.71rem;color:#a09880;width:46px">${lbl}</div>
-          ${barStyle(pct,col)}
-          <div style="font-size: 0.74rem;color:${col};font-weight:700;width:32px;text-align:right">${pct}%</div>
-        </div>`).join('')}
-      </div>
-      <div style="text-align:center;font-size: 0.82rem;color:#a09880;border-top:1px solid rgba(212,168,75,0.2);padding-top:12px;line-height:1.6">
-        ${['Every path walked brings the village closer to light. 🌿','The bamboo bends but never breaks. Keep going. 🎋','A scholar\'s candle brightens the whole Mura. 🏮'][Math.floor(Math.random()*3)]}
-      </div>
-      <div style="text-align:center;margin-top:10px;font-size: 0.68rem;color:#5a5445">Generated on ${new Date().toLocaleDateString()}</div>
-    </div>`;
-
-  // Inject into body temporarily
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText = 'position:fixed;top:0;left:0;z-index:9999;opacity:0;pointer-events:none';
-  wrapper.innerHTML = reportHtml;
-  document.body.appendChild(wrapper);
+  // কার্ড সাময়িকভাবে স্ক্রিনের বাইরে শো করানো হচ্ছে
+  reportCard.style.display = 'block';
+  reportCard.style.position = 'absolute';
+  reportCard.style.left = '-9999px';
+  reportCard.style.top = '-9999px';
 
   try {
     if(typeof html2canvas === 'undefined') {
@@ -8930,23 +9074,37 @@ async function downloadReport() {
         document.head.appendChild(s);
       });
     }
-    const canvas = await html2canvas(wrapper.firstElementChild, {
-      backgroundColor: '#0a0a0f', scale: 2, useCORS: true
+
+    // 🌟 ২. useCORS: true যোগ করা হলো 🌟
+    const canvas = await html2canvas(reportCard, {
+      scale: 2,
+      backgroundColor: '#121614',
+      useCORS: true,      // 👈 এক্সটার্নাল ছবি (যেমন Avatar) ডাউনলোড অ্যালাউ করবে
+      allowTaint: true    // 👈 ক্যানভাস ব্ল্যাঙ্ক হওয়া রোধ করবে
     });
+
+    const today = new Date();
+    const dateString = `${today.getDate().toString().padStart(2, '0')}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getFullYear()}`;
+
     const link = document.createElement('a');
-    link.download = 'VidyaMura_ScrollReport.png';
+    link.download = `VidyaMura_Report_${dateString}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
-    playSFX('success');
-    toast('✅ Report downloaded!');
-  } catch(e) {
-    playSFX('error');
-    toast('❌ Download failed: ' + e.message);
-    console.error(e);
+    
+    toast('✅ Report Card Downloaded!');
+    if(typeof playSFX === 'function') playSFX('success');
+
+  } catch (error) {
+    console.error("Error generating report:", error);
+    toast('❌ Failed to download report.');
+    if(typeof playSFX === 'function') playSFX('error');
   } finally {
-    document.body.removeChild(wrapper);
+    // কাজ শেষ হলে আবার হাইড করে দেওয়া
+    reportCard.style.display = 'none';
+    reportCard.style.position = 'static';
   }
 }
+
 // ═══════════════════════════════════════════
 // THEME TOGGLE
 // ═══════════════════════════════════════════
@@ -11181,6 +11339,259 @@ async function updateTreeCollectionDisplay() {
   if (fill) fill.style.width = pct + '%';
 }
 
+// ═══════════════════════════════════════════
+// REPORT CARD (SCHOLAR'S SCROLL) LOGIC
+// ═══════════════════════════════════════════
+function getReportCardJoinDate(ts) {
+  if (!ts || typeof ts.toDate !== 'function') return '—';
+  const d = ts.toDate();
+  const day = d.getDate();
+  const suffix = (day % 10 === 1 && day !== 11) ? 'st' : (day % 10 === 2 && day !== 12) ? 'nd' : (day % 10 === 3 && day !== 13) ? 'rd' : 'th';
+  return `${day}${suffix} ${d.toLocaleDateString('en-US',{month:'short'})} ${d.getFullYear()}`;
+}
+async function updateReportCard() {
+  if (!currentUserData || !currentUser) return;
+
+  // 1. Basic Info & Joining Date (Dynamic)
+  document.getElementById('rc-user-name').innerText = currentUserData.name || 'Warrior';
+  document.getElementById('rc-user-tagline').innerText = currentUserData.bio ? `"${currentUserData.bio}"` : '"Small steps, steady growth."';
+  document.getElementById('rc-joined-date').innerText = '🌱 Villager since ' + getReportCardJoinDate(currentUserData.createdAt);
+
+  // 2. Fetch Tasks (Done & Hours) with Percentages
+  const totalDone = currentUserData.totalDone || 0;
+  const totalHours = currentUserData.totalHours || 0;
+
+  // Percentage Calculations
+  const totalCreatedTasks = Math.max(1, allTasks.length); // Avoid div by 0
+  let totalCreatedHours = 0;
+  
+  allTasks.forEach(t => {
+    // ⚠️ Note: যদি তোমার ডেটাবেসে টাস্কের সময় মিনিটে সেভ থাকে, তবে (timeVal / 60) করবে। 
+    // আমি আপাতত ঘণ্টায় (hours) আছে ধরেই যোগ করছি।
+    let timeVal = parseFloat(t.duration) || parseFloat(t.time) || parseFloat(t.estimatedTime) || 0;
+    totalCreatedHours += timeVal; 
+  });
+  totalCreatedHours = Math.max(1, totalCreatedHours);
+
+  const taskDonePct = Math.min(100, Math.round((totalDone / totalCreatedTasks) * 100));
+  const taskHoursPct = Math.min(100, Math.round((totalHours / totalCreatedHours) * 100));
+
+  // % ডাটা বসানো হচ্ছে
+  document.getElementById('rc-task-done').innerHTML = `${totalDone} <span style="font-size:0.65rem; color:#737063;">(${taskDonePct}%)</span>`;
+  document.getElementById('rc-task-hours').innerHTML = `${totalHours.toFixed(1)}h <span style="font-size:0.65rem; color:#737063;">(${taskHoursPct}%)</span>`;
+
+  // 3. Efficiency Formula: (Task Done / Task Hours) * 100
+  let efficiency = 0;
+  if (totalHours > 0) {
+    efficiency = Math.round((totalDone / totalHours) * 100);
+  }
+  document.getElementById('rc-efficiency').innerText = efficiency + '%';
+
+  // 4. Timer / Zendo Data (Sessions & Deep Focus)
+  let timerTotal = 0;
+  let totalSessions = 0;
+  let longestSession = 0; // in minutes
+  try {
+    const tSnap = await db.collection('timerLogs').where('uid','==',currentUser.uid).get();
+    totalSessions = tSnap.docs.length;
+    
+    tSnap.docs.forEach(doc => {
+      const secs = doc.data().seconds || 0;
+      timerTotal += (secs / 3600); // Convert to hours
+      const mins = secs / 60;
+      if (mins > longestSession) longestSession = mins; // Find Longest
+    });
+  } catch(e) { console.warn("Error fetching timer logs:", e); }
+
+  document.getElementById('rc-timer-time').innerText = timerTotal.toFixed(1) + 'h';
+  document.getElementById('rc-total-sessions').innerText = totalSessions;
+  document.getElementById('rc-longest-session').innerText = Math.round(longestSession) + ' min';
+
+  // 5. Assignment / Course Completion Formula
+  // DB.courses ar DB.assignments already app-e load kora ache, Firestore-e
+  // notun kore query korar dorkar nei — ager buggy code-e sheta e vul chilo
+  let assignmentAvg = 0;
+  if (typeof DB !== 'undefined' && DB.courses && DB.courses.length) {
+    const totalCoursePct = DB.courses.reduce((sum, c) => {
+      const all = DB.assignments.filter(a => a.courseId === c.id);
+      const donePct = all.length ? (all.filter(a => isAssignmentDoneByMe(a)).length / all.length * 100) : 0;
+      return sum + donePct;
+    }, 0);
+    assignmentAvg = Math.round(totalCoursePct / DB.courses.length); // (25+35+45)/3
+  }
+  document.getElementById('rc-assignment-comp').innerText = assignmentAvg + '%';
+
+  // 6. Consistency Tracker (Your old formula)
+  const todayStr = getLocalDateString();
+  const curMonthStr = todayStr.slice(0,7);
+  const curYearStr = todayStr.slice(0,4);
+  const {mon, sun} = getCurrentWeekRange();
+
+  function countDone(filter) {
+    return allTasks.filter(t=>(t.completions||[]).some(c=>{
+      if(!c.endsWith('_'+currentUser.uid)) return false;
+      const dk=c.split('_')[0];
+      if(filter==='weekly'){const d=new Date(dk);return d>=mon&&d<=sun;}
+      if(filter==='monthly') return dk.startsWith(curMonthStr);
+      if(filter==='yearly') return dk.startsWith(curYearStr);
+      return false;
+    })).length;
+  }
+
+  const totalW = allTasks.filter(t=>{if(!t.dueDate)return false;const d=new Date(t.dueDate+'T00:00:00');return d>=mon&&d<=sun;}).length||1;
+  const totalM = allTasks.filter(t=>t.dueDate&&t.dueDate.startsWith(curMonthStr)).length||1;
+  const totalY = allTasks.filter(t=>t.dueDate&&t.dueDate.startsWith(curYearStr)).length||1;
+
+  const wPct = Math.min(100, Math.round(countDone('weekly') / totalW * 100));
+  const mPct = Math.min(100, Math.round(countDone('monthly') / totalM * 100));
+  const yPct = Math.min(100, Math.round(countDone('yearly') / totalY * 100));
+
+  document.getElementById('rc-weekly-text').innerText = wPct + '%';
+  document.getElementById('rc-weekly-bar').style.width = wPct + '%';
+  document.getElementById('rc-monthly-text').innerText = mPct + '%';
+  document.getElementById('rc-monthly-bar').style.width = mPct + '%';
+  document.getElementById('rc-yearly-text').innerText = yPct + '%';
+  document.getElementById('rc-yearly-bar').style.width = yPct + '%';
+
+  // 7. Aura, Level, XP (Guild Stats)
+  const xp = currentUserData.xp || 0;
+  // If your old functions are available globally, this will fetch rank/level data
+  const lv = (typeof getGuildLevel === 'function') ? getGuildLevel(xp) : { level: 1, name: 'Novice' };
+  const equipped = currentUserData.guildEquipped || [];
+  const inventory = currentUserData.guildInventory || [];
+  const power = (typeof getGuildPower === 'function') ? getGuildPower(equipped, inventory) : 0;
+  const rank = (typeof getGuildRankNew === 'function') ? getGuildRankNew(power, xp) : { name: 'Dormant' };
+
+  document.getElementById('rc-current-aura').innerText = rank.name;
+  document.getElementById('rc-journey-level').innerText = 'Lv.' + lv.level + ' ' + lv.name;
+  document.getElementById('rc-prana-level').innerText = '⚡ ' + power.toFixed(1);
+  document.getElementById('rc-total-xp').innerText = xp;
+  
+ 
+  document.getElementById('rc-trees').innerText = Math.round(currentUserData.totalTreesPlanted || 0);
+  document.getElementById('rc-items').innerText = inventory.length || 0;
+
+  // 8. Generated Date & Time
+  const genNow = new Date();
+  const genDateStr = `${genNow.getDate().toString().padStart(2,'0')}/${(genNow.getMonth()+1).toString().padStart(2,'0')}/${genNow.getFullYear()}`;
+  const genTimeStr = genNow.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('rc-date').innerText = `Generated on ${genDateStr}, ${genTimeStr}`;
+
+}
+
+// ═══════════════════════════════════════════
+// DOWNLOAD CERTIFICATE AS IMAGE
+// ═══════════════════════════════════════════
+function handleCertificateClick(btn) {
+  // Tap korar sathe sathe ekta shobdo o ekta chhoto "burst" animation —
+  // tarpor asol download function ta chalu hobe
+  if (typeof playSFX === 'function') playSFX('publish');
+  if (btn) {
+    btn.classList.add('cert-btn-pressed');
+    setTimeout(() => btn.classList.remove('cert-btn-pressed'), 220);
+  }
+  downloadCertificate();
+}
+async function downloadCertificate() {
+  const certCard = document.getElementById('certificate-export');
+  if (!certCard || !currentUserData) return;
+
+  toast('⏳ Crafting your Scroll of Mastery...');
+
+  // 1. Basic Info
+  document.getElementById('cert-user-name').innerText = currentUserData.name || 'Warrior';
+  
+  // 2. XP, Level & Aura Logic
+  const xp = currentUserData.xp || 0;
+  const lv = (typeof getGuildLevel === 'function') ? getGuildLevel(xp) : { level: 1, name: 'Novice' };
+  const equipped = currentUserData.guildEquipped || [];
+  const inventory = currentUserData.guildInventory || [];
+  const power = (typeof getGuildPower === 'function') ? getGuildPower(equipped, inventory) : 0;
+  const rank = (typeof getGuildRankNew === 'function') ? getGuildRankNew(power, xp) : { name: 'Dormant' };
+
+  // 3. Task & Efficiency Calculations
+  const totalDone = currentUserData.totalDone || 0;
+  const totalHours = currentUserData.totalHours || 0;
+  const totalCreatedTasks = Math.max(1, typeof allTasks !== 'undefined' ? allTasks.length : 1);
+  const taskDonePct = Math.min(100, Math.round((totalDone / totalCreatedTasks) * 100));
+  
+  let efficiency = 0;
+  if (totalHours > 0) {
+    efficiency = Math.round((totalDone / totalHours) * 100);
+  }
+
+  // 4. 🌳 Tree Calculation (Fixed from App Code) 🌳
+  const totalTrees = currentUserData.totalTreesPlanted || 0;
+
+// 4b. 📅 Journey Days — shobcheye purono task-er "Due Date" theke aajke porjonto
+  // (createdAt na, karon migration/join-er shomoy shob purono task-eo notun createdAt bosheche —
+  //  tai dueDate-i asol/reliable purono tarikh dey. Kono user-filter nei, shob task mile hisab hocche.)
+  const datedTasks = (typeof allTasks !== 'undefined' ? allTasks : []).filter(t => t.dueDate);
+  let journeyDays = 1;
+  if (datedTasks.length) {
+    const dueMsList = datedTasks
+      .map(t => new Date(t.dueDate + 'T00:00:00').getTime())
+      .filter(ms => !isNaN(ms));
+    if (dueMsList.length) {
+      const firstDay = new Date(Math.min(...dueMsList)); firstDay.setHours(0,0,0,0);
+      const today = new Date(); today.setHours(0,0,0,0);
+      journeyDays = Math.max(1, Math.round((today - firstDay) / 86400000) + 1);
+    }
+  }
+
+  // 5. Data Inject করা হচ্ছে
+  document.getElementById('cert-rank').innerText = rank.name;
+  document.getElementById('cert-journey-level').innerText = `Lv.${lv.level} ${lv.name}`;
+  document.getElementById('cert-task-comp').innerText = taskDonePct + '%';
+  document.getElementById('cert-efficiency').innerText = efficiency + '%';
+  document.getElementById('cert-xp').innerText = xp.toLocaleString() + ' XP';
+  document.getElementById('cert-trees').innerText = totalTrees + ' Trees';
+  document.getElementById('cert-journey-days').innerText = journeyDays + (journeyDays === 1 ? ' day' : ' days');
+
+  const today = new Date();
+  const dateString = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+  document.getElementById('cert-date').innerText = dateString;
+
+  // 6. ছবি তোলার জন্য কার্ডটিকে শো করানো হচ্ছে
+  certCard.style.display = 'block';
+  certCard.style.position = 'absolute';
+  certCard.style.left = '-9999px';
+  certCard.style.top = '-9999px';
+
+  try {
+    if(typeof html2canvas === 'undefined') {
+      await new Promise((res,rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+
+    const canvas = await html2canvas(certCard, {
+      scale: 2,
+      backgroundColor: '#121614',
+      windowWidth: 900,
+      windowHeight: 650
+    });
+
+    const link = document.createElement('a');
+    link.download = `VidyaMura_Certificate_${dateString.replace(/\//g, '-')}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    
+    toast('✅ Certificate Downloaded!');
+    if(typeof playSFX === 'function') playSFX('success');
+
+  } catch (error) {
+    console.error("Error generating certificate:", error);
+    toast('❌ Failed to download certificate.');
+    if(typeof playSFX === 'function') playSFX('error');
+  } finally {
+    certCard.style.display = 'none';
+    certCard.style.position = 'static';
+  }
+}
 
 </script>
 </body>
