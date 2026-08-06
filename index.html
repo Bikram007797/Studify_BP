@@ -6303,6 +6303,7 @@ let forestBusy = false;
 // ANY surface (task card, Timer tab, fullscreen) correctly resets that card.
 let linkedTaskId = null;
 let forestElapsed = 0; 
+let forestSafetyCapUntil = 0; // ei somoy porjonto Stop chapleo kono penalty lagbe na
 let forestSetMins = 60; 
 let forestSetSecs = 0; 
 let forestAlertPlayed = false; 
@@ -7191,6 +7192,7 @@ function forestStart() {
   forestElapsed = 0;
   forestSetSecs = forestSetMins * 60;
   forestRunning = true;
+  forestSafetyCapUntil = Date.now() + 3000; // 3 second-er safety window
   forestAlertPlayed = false;
   forestOvertimeRepeatsPlayed = 0;
   document.getElementById('forest-start-btn').style.display = 'none';
@@ -7218,8 +7220,11 @@ async function forestStop() {
   if(!forestRunning || forestBusy) return;
   const setTotalSecs = forestSetMins * 60;
   const completed = forestElapsed >= setTotalSecs;
+  // 3 second-er safety window-er modhye thakle — kono confirm dialog na dekhiyei
+  // sathe sathe penalty-heen cancel hoye jabe
+  const inSafetyWindow = !completed && Date.now() < forestSafetyCapUntil;
 
-  if(!completed) {
+  if(!completed && !inSafetyWindow) {
     const taskNote = linkedTaskId ? '\nএই Task-টা এখনো "Done" হবে না (পুরো সময় শেষ করলেই Done ধরা হবে)।' : '';
     const proceed = confirm('⚠️ তুমি এখনো তোমার set করা সময় শেষ করনি!\nএখন থামলে কোনো tree/apple পাবে না, উল্টো তোমার total থেকে 2🌲 কমে যাবে।' + taskNote + '\nসত্যিই থামতে চাও?');
     if(!proceed) return; // cancelled — keep the timer running
@@ -7237,9 +7242,20 @@ async function forestStop() {
     cancelServerAlarm();
     stopTimerStatusUpdates();
     closeTimerStatusNotification();
-    document.getElementById('forest-start-btn').style.display = '';
+   document.getElementById('forest-start-btn').style.display = '';
     document.getElementById('forest-stop-btn').style.display = 'none';
     document.getElementById('slider-val-display').style.display = '';
+
+    if(inSafetyWindow) {
+      // ── Safety-window cancel: kono penalty na, kono session log-o hobe na —
+      // thik jeno timer ta kokhono shuruই hoyni emonvabe cleanly bad hoye jabe ──
+      toast('↩️ Cancelled — no penalty');
+      forestElapsed = 0;
+      updateForestDisplay();
+      localStorage.removeItem('vm_timer_start');
+      localStorage.removeItem('vm_timer_setmins');
+      return;
+    }
 
     if(!completed) {
       // ── Quit before finishing: no reward, and a 2-tree penalty (never below 0). ──
@@ -7406,11 +7422,12 @@ async function getTotalFocusHours(forceRefresh) {
 // lastSeenAnnouncement won't match the new ID) will see it once again; users
 // who already saw an older one won't see it a second time for that same ID.
 // ═══════════════════════════════════════════════════════════
-const CURRENT_ANNOUNCEMENT_ID = 'report-card-download-v1';
+const CURRENT_ANNOUNCEMENT_ID = 'safety-cap-forest-redesign-v1';
 const CURRENT_ANNOUNCEMENT = {
-  title: '📝 নতুন Feature: New Report Card & Certificate Download!',
-  body: `Settings tab-এ এখন একটা নতুন <b>"Report Card / Certificate Download "</b> section আছে।<br><br>তোমার overall progress এর উপর ভিত্তি করে বানানো, এগুলি Download করে তুমি তোমার progress ও achievements কে future এর জন্য Save রাখতে পারো।।<br><br>
-    একবার ঘুরে দেখে এসো কেমন লাগছে।।`
+  title: '🛡️ নতুন Update: Timer Safety Cap + 🌲 নতুন Forest Look!',
+  body: `ভুল করে Start বাটনে চাপ পড়ে গেলেও আর চিন্তা নেই — এখন Timer শুরু হওয়ার পর <b>৩ সেকেন্ডের একটা Safety Window</b> থাকবে। এই সময়ের মধ্যে Stop চাপলে কোনো penalty লাগবে না, session-ও কোথাও count হবে না — একদম যেন কিছুই হয়নি। এটা Timer ট্যাব আর Task-এর সাথে যুক্ত Timer, দুই জায়গাতেই কাজ করবে।<br><br>
+    আর তোমার Forest-টাও পুরোপুরি নতুন করে সাজানো হয়েছে 🌿 — এখন গাছগুলো একটা <b>isometric 3D ground tile</b>-এর উপর সুন্দর সারিবদ্ধভাবে বসানো থাকে, আগের মতো এলোমেলোভাবে ছড়ানো না। প্রতিটা গাছের ডিজাইনও একদম নতুন করে আঁকা হয়েছে — আর Rare গাছগুলোতে এখন বিশেষ একটা glow আছে, যাতে এক নজরেই বোঝা যায় কোনটা special।<br><br>
+    Timer ট্যাবে গিয়ে একবার ঘুরে দেখে এসো!`
     };
 let featureAnnouncementChecked = false;
 function checkFeatureAnnouncement() {
