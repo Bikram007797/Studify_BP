@@ -1406,6 +1406,29 @@ select {
 .forest-btn.btn-busy, .fs-btn.btn-busy { opacity: 0.55; pointer-events: none; }
 .forest-btn-start { background: var(--accent-green); color: #fff; }
 .forest-btn-stop  { background: var(--accent-red);   color: #fff; }
+.forest-round-btn {
+  width: 56px; height: 56px; border-radius: 50%; border: none;
+  font-size: 1.3rem; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: transform 0.12s ease, box-shadow 0.15s ease;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3); font-family: var(--font-head);
+}
+.forest-round-btn:active { transform: scale(0.86); }
+.forest-round-btn-pause   { background: var(--accent-gold);   color: #1a1510; }
+.forest-round-btn-stop    { background: var(--accent-red);    color: #fff; }
+.forest-round-btn-restart { background: var(--accent-purple); color: #fff; }
+.forest-round-btn.safety-active {
+  background: var(--accent-orange) !important;
+  animation: safetyPulse 1s ease-in-out infinite;
+}
+@keyframes safetyPulse {
+  0%, 100% { box-shadow: 0 3px 10px rgba(0,0,0,0.3), 0 0 0 0 rgba(255,150,50,0.5); }
+  50%      { box-shadow: 0 3px 10px rgba(0,0,0,0.3), 0 0 0 9px rgba(255,150,50,0); }
+}
+.forest-safety-note {
+  text-align: center; font-size: 0.72rem; color: var(--accent-orange);
+  margin-top: 8px; font-weight: 600; animation: safetyTextBlink 1.4s ease-in-out infinite;
+}
+@keyframes safetyTextBlink { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 .timer-subject-tag {
   display: inline-block; padding: 5px 14px; border-radius: 20px;
   background: rgba(124,92,191,0.18); border: 1px solid var(--accent-purple);
@@ -2883,8 +2906,11 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
       <div class="timer-subject-tag" id="forest-subject-label" style="margin-bottom:14px">No subject selected</div>
       <div class="forest-btn-row">
         <button class="forest-btn forest-btn-start" id="forest-start-btn" onclick="forestStart()">▶ Start</button>
-        <button class="forest-btn forest-btn-stop"  id="forest-stop-btn"  onclick="forestStop()" style="display:none">⏹ Stop</button>
+        <button class="forest-round-btn forest-round-btn-pause"   id="forest-pause-btn"   onclick="mainTimerPauseClick()"   style="display:none" title="Pause">⏸</button>
+        <button class="forest-round-btn forest-round-btn-stop"    id="forest-stop-btn"    onclick="mainTimerStopClick()"    style="display:none" title="Stop">⏹</button>
+        <button class="forest-round-btn forest-round-btn-restart" id="forest-restart-btn" onclick="mainTimerRestartClick()" style="display:none" title="Restart">↺</button>
       </div>
+      <div class="forest-safety-note" id="forest-safety-note" style="display:none">🛡️ Safety time remaining...</div>
       <div style="margin-top:12px;text-align:center">
         <button onclick="openTimerFullscreen()" style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:20px;padding:7px 18px;color:var(--text-secondary);font-size: 0.82rem;cursor:pointer;font-weight:600;transition:all 0.2s" onmouseenter="this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--accent-purple-bright')" onmouseleave="this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--text-secondary')">⛶ Fullscreen Mode</button>
       </div>
@@ -6303,6 +6329,7 @@ let forestBusy = false;
 let linkedTaskId = null;
 let forestElapsed = 0; 
 let forestSafetyCapUntil = 0; // ei somoy porjonto Stop chapleo kono penalty lagbe na
+let forestSafetyUiTimeout = null; // safety-window visual indicator (button color + note) off korar timer
 let forestSetMins = 60; 
 let forestSetSecs = 0; 
 let forestAlertPlayed = false; 
@@ -7087,6 +7114,8 @@ function updateForestDisplay() {
       extraEl.style.display = 'none';
     }
   }
+  const mainPauseBtn = document.getElementById('forest-pause-btn');
+  if(mainPauseBtn) mainPauseBtn.innerHTML = (isRunning && fsPaused) ? '▶' : '⏸';
   const ringEl = document.getElementById('forest-ring');
   if(ringEl) {
     if(isRunning) {
@@ -7112,18 +7141,16 @@ function updateForestDisplay() {
 }
 
 function setStopButtonBusy(busy) {
-  ['forest-stop-btn', 'fs-stop-btn'].forEach(id => {
-    const b = document.getElementById(id);
-    if(!b) return;
-    if(busy) {
-      if(!b.dataset.origLabel) b.dataset.origLabel = b.innerHTML;
-      b.innerHTML = '⏳ Saving...';
-      b.classList.add('btn-busy');
-    } else {
-      if(b.dataset.origLabel) b.innerHTML = b.dataset.origLabel;
-      b.classList.remove('btn-busy');
-    }
-  });
+  const mainBtn = document.getElementById('forest-stop-btn'); // round icon-only button
+  if(mainBtn) {
+    if(busy) { if(!mainBtn.dataset.origLabel) mainBtn.dataset.origLabel = mainBtn.innerHTML; mainBtn.innerHTML = '⏳'; mainBtn.classList.add('btn-busy'); }
+    else { if(mainBtn.dataset.origLabel) mainBtn.innerHTML = mainBtn.dataset.origLabel; mainBtn.classList.remove('btn-busy'); }
+  }
+  const fsBtn = document.getElementById('fs-stop-btn'); // fullscreen — text label thake
+  if(fsBtn) {
+    if(busy) { if(!fsBtn.dataset.origLabel) fsBtn.dataset.origLabel = fsBtn.innerHTML; fsBtn.innerHTML = '⏳ Saving...'; fsBtn.classList.add('btn-busy'); }
+    else { if(fsBtn.dataset.origLabel) fsBtn.innerHTML = fsBtn.dataset.origLabel; fsBtn.classList.remove('btn-busy'); }
+  }
 }
 
 // ── Task/Dojo card-linked Timer: lets a task's own "Time Required" hours and
@@ -7184,6 +7211,13 @@ function updateTaskLinkedTimerDisplay() {
   }
 }
 
+// Main screen-er notun round button-gulor jonno — sound effect play kore, tarpor
+// আসল shared function (fsPause/fsRestart/forestStop) call kore, jate fullscreen
+// ar task-card-er behavior ek-i thake, shudhu sound-ta notun
+function mainTimerPauseClick() { playSFX('click'); fsPause(); }
+function mainTimerRestartClick() { playSFX('click'); fsRestart(); }
+function mainTimerStopClick() { playSFX('click'); forestStop(); }
+
 function forestStart() {
   if(forestBusy || forestRunning) return;
   if(!currentUser) return toast('Please login first!');
@@ -7196,8 +7230,21 @@ function forestStart() {
   forestOvertimeRepeatsPlayed = 0;
   document.getElementById('forest-start-btn').style.display = 'none';
   document.getElementById('forest-stop-btn').style.display = '';
+  const fpb = document.getElementById('forest-pause-btn');   if(fpb) fpb.style.display = '';
+  const frb = document.getElementById('forest-restart-btn'); if(frb) frb.style.display = '';
   document.getElementById('forest-dial-handle').style.display = 'none';
   document.getElementById('slider-val-display').style.display = 'none';
+
+  // ── Safety-window visual cue: Stop button-take 3 sec-er jonno orange kore dey ──
+  if(forestSafetyUiTimeout) clearTimeout(forestSafetyUiTimeout);
+  const safetyBtns = [document.getElementById('forest-stop-btn'), document.getElementById('fs-stop-btn')];
+  safetyBtns.forEach(b => b && b.classList.add('safety-active'));
+  const safetyNote = document.getElementById('forest-safety-note');
+  if(safetyNote) safetyNote.style.display = '';
+  forestSafetyUiTimeout = setTimeout(() => {
+    safetyBtns.forEach(b => b && b.classList.remove('safety-active'));
+    if(safetyNote) safetyNote.style.display = 'none';
+  }, 3000);
   requestAlertNotifyPermission();
   ensurePushSubscribed();
   startKeepAlive();
@@ -7243,7 +7290,14 @@ async function forestStop() {
     closeTimerStatusNotification();
    document.getElementById('forest-start-btn').style.display = '';
     document.getElementById('forest-stop-btn').style.display = 'none';
+    const fpb2 = document.getElementById('forest-pause-btn');   if(fpb2) fpb2.style.display = 'none';
+    const frb2 = document.getElementById('forest-restart-btn'); if(frb2) frb2.style.display = 'none';
     document.getElementById('slider-val-display').style.display = '';
+
+    if(forestSafetyUiTimeout) { clearTimeout(forestSafetyUiTimeout); forestSafetyUiTimeout = null; }
+    [document.getElementById('forest-stop-btn'), document.getElementById('fs-stop-btn')].forEach(b => b && b.classList.remove('safety-active'));
+    const safetyNote2 = document.getElementById('forest-safety-note');
+    if(safetyNote2) safetyNote2.style.display = 'none';
 
     if(inSafetyWindow) {
       // ── Safety-window cancel: kono penalty na, kono session log-o hobe na —
@@ -9346,7 +9400,14 @@ function scheduleServerAlarm(finishAt, minutes) {
 
 function cancelServerAlarm() {
   if (!currentUser) return;
-  fetch(`${ALARM_WORKER_URL}/cancel?uid=${currentUser.uid}`, { method: 'POST' }).catch(() => {});
+  const url = `${ALARM_WORKER_URL}/cancel?uid=${currentUser.uid}`;
+  // sendBeacon browser-ke guarantee dey je request-ta page background/minimize
+  // hoye gele-o pathano hobe — fetch() majhpothe kete jete pare, sendBeacon jay na
+  if (navigator.sendBeacon) {
+    const ok = navigator.sendBeacon(url, new Blob([], { type: 'text/plain' }));
+    if (ok) return;
+  }
+  fetch(url, { method: 'POST', keepalive: true }).catch(() => {});
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -9898,6 +9959,7 @@ function fsPause() {
   if(fsPaused) {
     // Resume
     fsPaused = false;
+    localStorage.removeItem('vm_timer_paused');
     forestInterval = setInterval(() => {
       forestElapsed++;
       updateForestDisplay();
@@ -9912,6 +9974,7 @@ function fsPause() {
   } else {
     // Pause
     fsPaused = true;
+     localStorage.setItem('vm_timer_paused', '1');
     clearInterval(forestInterval);
     stopAllTimerSounds();
     clearScheduledAlerts();
@@ -9921,6 +9984,7 @@ function fsPause() {
     updateTimerStatusNotification(); // one last update so the bar shows "Paused"
   }
   fsUpdateDisplay();
+  updateForestDisplay();
 }
 
 function fsRestart() {
@@ -9956,7 +10020,7 @@ async function fsStop() {
 
 // Background timer re-sync via Page Visibility API
 document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible' && forestRunning && !fsPaused) {
+  if(document.visibilityState === 'visible' && forestRunning && !fsPaused && localStorage.getItem('vm_timer_paused') !== '1') {
     const startTs = parseInt(localStorage.getItem('vm_timer_start') || '0');
     if(startTs) {
       const elapsed = Math.floor((Date.now() - startTs) / 1000);
