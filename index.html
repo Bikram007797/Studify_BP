@@ -972,6 +972,30 @@ select {
   border-radius: 7px; padding: 5px 11px; color: var(--accent-gold);
   font-size: 0.76rem; font-weight: 600; cursor: pointer; flex-shrink: 0;
 }
+/* Weekly Guild Challenge — deliberately distinct from the plain goal card:
+   dual-tone border, soft glow, and a corner ribbon so it reads as a special,
+   cross-user event rather than a personal to-do item. */
+.home-challenge-highlight {
+  background: linear-gradient(155deg, #1a1030 0%, #1a150f 65%);
+  border: 1px solid transparent;
+  background-image:
+    linear-gradient(155deg, #1a1030 0%, #1a150f 65%),
+    linear-gradient(120deg, var(--accent-purple), var(--accent-gold));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: 0 4px 18px -4px rgba(136,179,148,0.35), 0 2px 8px rgba(0,0,0,0.3);
+}
+.home-challenge-highlight::before {
+  background: radial-gradient(circle, rgba(136,179,148,0.18), transparent 70%);
+}
+.home-challenge-highlight .home-goal-label { color: var(--accent-purple); }
+.home-challenge-highlight .home-goal-edit {
+  background: linear-gradient(120deg, var(--accent-purple), var(--accent-gold));
+  border: none; color: #16120a; font-weight: 700;
+}
+.home-challenge-meta {
+  font-size: 0.68rem; color: var(--text-muted); margin-top: 5px; font-weight: 600;
+}
 .home-daily-title {
   font-family: var(--font-head); font-size: 0.9rem;
   color: var(--accent-gold); letter-spacing: 1px; margin-bottom: 12px;
@@ -1400,29 +1424,52 @@ select {
 .tree-confirm-preview { width: 76px; height: 96px; margin: 0 auto 10px; display: block; }
 .tree-confirm-text { text-align: center; font-size: 0.9rem; color: var(--text-primary); margin-bottom: 4px; line-height: 1.5; }
 .tree-confirm-sub { text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; }
-.forest-btn-row { display: flex; gap: 10px; justify-content: center; }
+.forest-btn-row { display: flex; flex-wrap: nowrap; gap: 12px; justify-content: center; align-items: center; }
 .forest-btn { padding: 13px 36px; border-radius: 12px; border: none; font-size: 0.96rem; font-weight: 700; cursor: pointer; transition: transform 0.12s ease, opacity 0.2s ease; font-family: var(--font-head); }
 .forest-btn:active { transform: scale(0.94); }
 .forest-btn.btn-busy, .fs-btn.btn-busy { opacity: 0.55; pointer-events: none; }
 .forest-btn-start { background: var(--accent-green); color: #fff; }
 .forest-btn-stop  { background: var(--accent-red);   color: #fff; }
 .forest-round-btn {
-  width: 56px; height: 56px; border-radius: 50%; border: none;
-  font-size: 1.3rem; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: transform 0.12s ease, box-shadow 0.15s ease;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.3); font-family: var(--font-head);
+  flex: 0 0 auto;
+  width: 58px; height: 58px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.16);
+  font-size: 1.28rem; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: transform 0.15s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s ease, filter 0.2s ease;
+  font-family: var(--font-head);
+  background-blend-mode: overlay;
+  position: relative;
 }
-.forest-round-btn:active { transform: scale(0.86); }
-.forest-round-btn-pause   { background: var(--accent-gold);   color: #1a1510; }
-.forest-round-btn-stop    { background: var(--accent-red);    color: #fff; }
-.forest-round-btn-restart { background: var(--accent-purple); color: #fff; }
+.forest-round-btn::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: 50%;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.35), inset 0 -3px 6px rgba(0,0,0,0.18);
+  pointer-events: none;
+}
+.forest-round-btn:hover { filter: brightness(1.06); }
+.forest-round-btn:active { transform: scale(0.88); filter: brightness(0.95); }
+.forest-round-btn-pause {
+  background: linear-gradient(150deg, rgba(255,255,255,0.30), rgba(255,255,255,0) 55%), var(--accent-gold);
+  color: #1a1510;
+  box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--accent-gold) 65%, transparent), 0 2px 4px rgba(0,0,0,0.25);
+}
+.forest-round-btn-stop {
+  background: linear-gradient(150deg, rgba(255,255,255,0.30), rgba(255,255,255,0) 55%), var(--accent-red);
+  color: #fff;
+  box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--accent-red) 65%, transparent), 0 2px 4px rgba(0,0,0,0.25);
+}
+.forest-round-btn-restart {
+  background: linear-gradient(150deg, rgba(255,255,255,0.30), rgba(255,255,255,0) 55%), var(--accent-purple);
+  color: #fff;
+  box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--accent-purple) 65%, transparent), 0 2px 4px rgba(0,0,0,0.25);
+}
 .forest-round-btn.safety-active {
-  background: var(--accent-orange) !important;
+  background: linear-gradient(150deg, rgba(255,255,255,0.30), rgba(255,255,255,0) 55%), var(--accent-orange) !important;
   animation: safetyPulse 1s ease-in-out infinite;
 }
 @keyframes safetyPulse {
-  0%, 100% { box-shadow: 0 3px 10px rgba(0,0,0,0.3), 0 0 0 0 rgba(255,150,50,0.5); }
-  50%      { box-shadow: 0 3px 10px rgba(0,0,0,0.3), 0 0 0 9px rgba(255,150,50,0); }
+  0%, 100% { box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--accent-orange) 65%, transparent), 0 2px 4px rgba(0,0,0,0.25), 0 0 0 0 rgba(255,150,50,0.5); }
+  50%      { box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--accent-orange) 65%, transparent), 0 2px 4px rgba(0,0,0,0.25), 0 0 0 9px rgba(255,150,50,0); }
 }
 .forest-safety-note {
   text-align: center; font-size: 0.72rem; color: var(--accent-orange);
@@ -2323,6 +2370,14 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
   margin-bottom: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
+.wc-completed-badge {
+  position: absolute; top: 14px; right: 14px;
+  background: linear-gradient(120deg, var(--accent-green), #3ba282);
+  color: #fff; font-size: 0.7rem; font-weight: 700;
+  padding: 4px 10px; border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(59,162,130,0.4);
+  white-space: nowrap;
+}
 .da-chart-title {
   font-family: var(--font-head);
   font-size: 1rem;
@@ -2694,12 +2749,13 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
       </div>
       <div class="home-goal-edit">Edit</div>
     </div>
-    <div class="home-goal-card" id="home-challenge-card">
+    <div class="home-goal-card home-challenge-highlight" id="home-challenge-card">
       <div class="home-goal-icon">⚔️</div>
       <div style="flex:1">
         <div class="home-goal-label">🏯 Weekly Guild Challenge</div>
         <div class="home-goal-text" id="home-challenge-text">Loading challenge...</div>
         <div class="dq-progress-bar" style="margin-top:7px"><div class="dq-progress-fill" id="home-challenge-fill" style="width:0%;background:linear-gradient(90deg,var(--accent-purple),var(--accent-cyan))"></div></div>
+        <div class="home-challenge-meta" id="home-challenge-meta"></div>
       </div>
       <div class="home-goal-edit" id="home-challenge-action">Edit</div>
     </div>
@@ -2986,6 +3042,7 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
       </div>
       <div class="profile-level" id="prof-level">LEVEL 1 · NAVA SHISHYA</div>
       <div style="font-size: 0.84rem;color:var(--accent-gold);margin-top:4px" id="prof-pts-diamonds">✨ 0 pts · 🌲 0</div>
+      <div style="font-size: 0.72rem;color:var(--text-muted);margin-top:3px" id="prof-pts-breakdown">🎯 Main: 0 pts · ⚔️ Weekly Challenge: 0 pts</div>
       <div class="xp-bar-wrap">
         <div class="xp-label"><span id="xp-current">0 pts</span><span id="xp-next">Next: 100 pts</span></div>
         <div class="progress-bar"><div class="progress-fill" id="xp-bar" style="width:0%"></div></div>
@@ -3236,6 +3293,15 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
         <div class="da-chart-title">📚 Subject Strength (This Month)</div>
         <div style="font-size:0.76rem;color:var(--text-muted);text-align:center;margin-bottom:10px" id="subject-strength-summary"></div>
         <div class="da-chart-container" id="subject-strength-container" style="height: 260px;"><canvas id="subjectStrengthChart"></canvas></div>
+      </div>
+
+      <div class="da-major-section"><span style="font-size:1.1rem">⚔️</span><div class="da-major-section-title">Weekly Guild Challenge</div></div>
+
+      <div class="da-chart-card" style="position:relative">
+        <div class="da-chart-title">🏯 Guild Challenge History — Target vs Achieved</div>
+        <div class="wc-completed-badge" id="weekly-challenge-completed-badge">✅ 0 completed</div>
+        <div style="font-size:0.76rem;color:var(--text-muted);text-align:center;margin-bottom:2px" id="weekly-challenge-summary"></div>
+        <div class="da-chart-container"><canvas id="weeklyChallengeChart"></canvas></div>
       </div>
 
       <div class="da-major-section"><span style="font-size:1.1rem">📈</span><div class="da-major-section-title">Overall Progress</div></div>
@@ -3887,7 +3953,8 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
     <div class="form-group">
       <label>COMBINED STUDY HOURS TARGET (THIS WEEK)</label>
       <input type="number" id="cm-hours" min="1" step="0.5" style="width:100%;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);padding:11px 14px;font-size: 0.9rem;outline:none;font-family:Inter,sans-serif" placeholder="e.g. 25">
-      <div style="font-size: 0.76rem;color:var(--text-muted);margin-top:8px;line-height:1.5">Set a combined hours goal for everyone in your guild this week (based on completed Task hours only). Hit it together and everyone can claim a <b>+25 pts</b> bonus.</div>
+      <div style="font-size: 0.76rem;color:var(--text-muted);margin-top:8px;line-height:1.5">Set a combined hours goal for everyone in your guild this week (based on completed Task hours only). Hit it together and everyone can claim a <b>+20 pts</b> bonus — but only after each person taps Claim (no auto-reward).</div>
+      <div style="font-size: 0.72rem;color:var(--text-muted);margin-top:6px;line-height:1.5">⚠️ Max <b>3 edits</b> per week. Once completed, a new challenge can't be set until both guildmates claim their reward.</div>
     </div>
    <button class="btn-primary" style="width: 100%; padding: 12px; margin-top: 10px; font-size: 0.95rem; font-weight: 700;" onclick="saveWeeklyChallenge()">Set Challenge</button>
   </div>
@@ -4506,20 +4573,44 @@ function updateHomeGoal() {
 // ═══════════════════════════════════════════
 // WEEKLY GUILD CHALLENGE (combined hours goal, per-user bonus claim)
 // ═══════════════════════════════════════════
+// Reward is now a FIXED constant — the old per-document `bonusPoints` field
+// caused the exact bug reported: the modal always told users "+25 pts", but
+// saveWeeklyChallenge() silently defaulted new challenges to 50 when nothing
+// was passed in. Reading from a single constant everywhere makes that class
+// of mismatch impossible going forward. (We still record bonusPoints:20 in
+// the saved doc purely for the Firestore audit trail — logic never reads it.)
+const WEEKLY_CHALLENGE_BONUS = 20;
+const WEEKLY_CHALLENGE_MAX_EDITS = 3;
+
+// Weekly Guild Challenge points, computed fresh from Firestore every time —
+// NOT a mirrored counter field. This is deliberate: a mirrored field only
+// reflects claims made after that field existed, so it silently under-counts
+// any history from before (exactly what happened here — 2 challenges were
+// claimed under the old, buggy 50-pt system before this breakdown existed,
+// and a counter field would have shown 0 for them forever). Reading
+// `weeklyChallenges` directly and summing each doc's OWN recorded
+// bonusPoints (not today's constant) makes the breakdown correct for old
+// and new challenges alike, and self-heals if Firestore data ever changes.
+async function computeMyWeeklyChallengePoints(uid) {
+  try {
+    const snap = await db.collection('weeklyChallenges').where('claimedBy', 'array-contains', uid).get();
+    return snap.docs.reduce((sum, d) => sum + (d.data().bonusPoints || WEEKLY_CHALLENGE_BONUS), 0);
+  } catch(e) {
+    console.error('computeMyWeeklyChallengePoints failed:', e);
+    return 0;
+  }
+}
+
 function getCurrentWeekId() {
   const { mon } = getCurrentWeekRange();
   return mon.toLocaleDateString('sv-SE');
 }
 
-// Counts completed-Task hours for every known user within the current Mon–Sun
-// window. Focus Timer session time is intentionally NOT included here anymore —
-// this challenge tracks task completion only, separate from the personal Timer stats.
-async function computeWeeklyContributions() {
-  const { mon, sun } = getCurrentWeekRange();
-  const monTime = mon.getTime(), sunTime = sun.getTime();
+// Generic version — same logic as before, but reusable for ANY week (needed
+// by the Analytics history chart, which has to recompute past weeks too).
+async function computeContributionsForRange(monTime, sunTime) {
   const uids = allUsersData.length ? allUsersData.map(u => u.id) : [currentUser.uid];
   const perUser = {};
-
   uids.forEach(uid => {
     let hrs = 0;
     allTasks.forEach(task => {
@@ -4533,14 +4624,30 @@ async function computeWeeklyContributions() {
     });
     perUser[uid] = hrs;
   });
-
   return perUser;
+}
+
+// Counts completed-Task hours for every known user within the current Mon–Sun
+// window. Focus Timer session time is intentionally NOT included here anymore —
+// this challenge tracks task completion only, separate from the personal Timer stats.
+async function computeWeeklyContributions() {
+  const { mon, sun } = getCurrentWeekRange();
+  return computeContributionsForRange(mon.getTime(), sun.getTime());
+}
+
+// True once every known guild member has claimed this challenge's reward.
+function isChallengeFullyClaimed(challenge) {
+  if(!challenge) return true;
+  const claimedBy = challenge.claimedBy || [];
+  const uids = allUsersData.length ? allUsersData.map(u => u.id) : [currentUser.uid];
+  return uids.every(uid => claimedBy.includes(uid));
 }
 
 async function refreshWeeklyChallenge() {
   const textEl = document.getElementById('home-challenge-text');
   const fillEl = document.getElementById('home-challenge-fill');
   const actionEl = document.getElementById('home-challenge-action');
+  const metaEl = document.getElementById('home-challenge-meta');
   if(!textEl || !fillEl || !actionEl || !currentUser) return;
 
   const target = currentChallenge?.targetHours || 0;
@@ -4549,13 +4656,13 @@ async function refreshWeeklyChallenge() {
     fillEl.style.width = '0%';
     actionEl.textContent = 'Edit';
     actionEl.onclick = (e) => { e.stopPropagation(); openChallengeModal(); };
+    if(metaEl) metaEl.textContent = '';
     return;
   }
 
   const perUser = await computeWeeklyContributions();
   const combined = Object.values(perUser).reduce((a, b) => a + b, 0);
   const pct = Math.min(100, Math.round((combined / target) * 100));
-  const bonus = currentChallenge.bonusPoints || 25;
   const claimedBy = currentChallenge.claimedBy || [];
   const myHrs = (perUser[currentUser.uid] || 0).toFixed(1);
   const otherLine = Object.entries(perUser)
@@ -4566,6 +4673,21 @@ async function refreshWeeklyChallenge() {
   textEl.innerHTML = `🧑 You: ${myHrs}h${otherLine ? ' · ' + otherLine : ''}<br>🎯 Target: ${target}h (${pct}%)`;
   fillEl.style.width = pct + '%';
 
+  const editsLeft = Math.max(0, WEEKLY_CHALLENGE_MAX_EDITS - (currentChallenge.editCount || 0));
+  const fullyClaimed = isChallengeFullyClaimed(currentChallenge);
+
+  // Combined hours just crossed the target for the first time — lock the
+  // challenge (see saveWeeklyChallenge()'s guard for why) and record it.
+  // Guarded on !currentChallenge.locked so this only ever writes ONCE per
+  // challenge, no matter how many times refreshWeeklyChallenge() re-runs.
+  if(combined >= target && !currentChallenge.locked) {
+    currentChallenge.locked = true; // optimistic local guard against a write-storm before the snapshot round-trips back
+    db.collection('weeklyChallenges').doc(getCurrentWeekId()).update({
+      locked: true,
+      completedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(e => console.error('Failed to lock completed challenge:', e));
+  }
+
   if(combined >= target) {
     fillEl.style.background = 'linear-gradient(90deg,var(--accent-gold),var(--accent-orange))';
     if(claimedBy.includes(currentUser.uid)) {
@@ -4573,12 +4695,14 @@ async function refreshWeeklyChallenge() {
       actionEl.onclick = (e) => e.stopPropagation();
     } else {
       actionEl.textContent = '🎁 Claim';
-      actionEl.onclick = (e) => { e.stopPropagation(); claimWeeklyChallenge(bonus); };
+      actionEl.onclick = (e) => { e.stopPropagation(); claimWeeklyChallenge(); };
     }
+    if(metaEl) metaEl.textContent = fullyClaimed ? '' : '🔒 Both guildmates must claim before a new challenge can be set';
   } else {
     fillEl.style.background = 'linear-gradient(90deg,var(--accent-purple),var(--accent-cyan))';
     actionEl.textContent = 'Edit';
     actionEl.onclick = (e) => { e.stopPropagation(); openChallengeModal(); };
+    if(metaEl) metaEl.textContent = `✏️ Edits left this week: ${editsLeft}/${WEEKLY_CHALLENGE_MAX_EDITS}`;
   }
 }
 
@@ -4592,15 +4716,50 @@ async function saveWeeklyChallenge() {
   const val = parseFloat(document.getElementById('cm-hours').value);
   if(!val || val <= 0) { toast('❌ Enter a valid target'); return; }
   const weekId = getCurrentWeekId();
+
+  // Rule: once the current challenge is completed, nobody can set a new one
+  // (i.e. overwrite this week's target) until BOTH guildmates have claimed
+  // their reward — prevents the target being changed out from under a
+  // still-unclaimed win.
+  if(currentChallenge?.locked && !isChallengeFullyClaimed(currentChallenge)) {
+    toast('🔒 Challenge completed — both guildmates must claim first');
+    return;
+  }
+
+  // Rule: max 3 edits per challenge. The FIRST time a challenge is set for
+  // a given week doesn't count as an "edit" — only changes made after that
+  // do. The counter naturally resets every week since weekId (and so the
+  // Firestore doc) changes every Monday.
+  const isEdit = !!currentChallenge;
+  if(isEdit && (currentChallenge.editCount || 0) >= WEEKLY_CHALLENGE_MAX_EDITS) {
+    toast(`❌ Edit limit reached (${WEEKLY_CHALLENGE_MAX_EDITS}/${WEEKLY_CHALLENGE_MAX_EDITS}) for this week's challenge`);
+    return;
+  }
+
   try {
-    await db.collection('weeklyChallenges').doc(weekId).set({
+    const payload = {
       targetHours: val,
-      bonusPoints: currentChallenge?.bonusPoints || 50,
-      claimedBy: currentChallenge?.claimedBy || [],
+      bonusPoints: WEEKLY_CHALLENGE_BONUS, // record-keeping only — see constant above
       setBy: currentUser.uid,
       setByName: currentUserData?.name || 'Someone',
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
+    };
+    if(isEdit) {
+      payload.editCount = firebase.firestore.FieldValue.increment(1);
+      // A fresh target after a completed+claimed challenge starts a new round.
+      if(currentChallenge.locked) {
+        payload.locked = false;
+        payload.claimedBy = [];
+        payload.completedAt = null;
+      }
+    } else {
+      payload.editCount = 0;
+      payload.claimedBy = [];
+      payload.locked = false;
+      payload.claimLog = [];
+      payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    }
+    await db.collection('weeklyChallenges').doc(weekId).set(payload, { merge: true });
     closeModal('challenge-modal');
     toast('⚔️ Challenge set for the whole guild!');
     playSFX('success');
@@ -4611,12 +4770,25 @@ async function saveWeeklyChallenge() {
   }
 }
 
-async function claimWeeklyChallenge(bonus) {
+async function claimWeeklyChallenge() {
   const weekId = getCurrentWeekId();
+  const bonus = WEEKLY_CHALLENGE_BONUS;
   try {
     await db.collection('weeklyChallenges').doc(weekId).update({
-      claimedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+      claimedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+      // Timestamps inside arrayUnion elements can't use serverTimestamp(), so
+      // this uses the client clock — fine for a lightweight history log.
+      claimLog: firebase.firestore.FieldValue.arrayUnion({
+        uid: currentUser.uid,
+        name: currentUserData?.name || 'Someone',
+        claimedAt: Date.now()
+      })
     });
+    // Reward only ever lands in the user's account HERE, on explicit claim —
+    // never automatically on completion. `xp` is the only field this writes
+    // to now — Profile's "Weekly Challenge" breakdown is computed fresh from
+    // the weeklyChallenges collection itself (see computeMyWeeklyChallengePoints),
+    // not from a separately-mirrored counter, so there's nothing else to keep in sync here.
     await db.collection('users').doc(currentUser.uid).update({
       xp: firebase.firestore.FieldValue.increment(bonus)
     });
@@ -4629,6 +4801,7 @@ async function claimWeeklyChallenge(bonus) {
     toast('❌ Could not claim bonus');
   }
 }
+
 
 // ═══════════════════════════════════════════
 // NOTIFICATIONS (cross-user activity feed for Tasks / Courses / Assignments / Exams)
@@ -6330,6 +6503,23 @@ let linkedTaskId = null;
 let forestElapsed = 0; 
 let forestSafetyCapUntil = 0; // ei somoy porjonto Stop chapleo kono penalty lagbe na
 let forestSafetyUiTimeout = null; // safety-window visual indicator (button color + note) off korar timer
+// forestElapsed-ke wall-clock diye "self-heal" kore — setInterval throttle/suspend
+// hoye gele-o ei function shomoyi thik shonkha ferot dey
+function getWallClockElapsed() {
+  if(!forestRunning || fsPaused) return forestElapsed;
+  const startTs = parseInt(localStorage.getItem('vm_timer_start') || '0');
+  // Defensive guards: corrupted/missing localStorage, NaN, or a future
+  // timestamp (possible if the device clock was changed) must never produce
+  // a bogus elapsed value — fall back to the last known-good in-memory count.
+  if(!startTs || isNaN(startTs) || startTs > Date.now()) return forestElapsed;
+  const wallElapsed = Math.floor((Date.now() - startTs) / 1000);
+  if(!isFinite(wallElapsed) || wallElapsed < 0) return forestElapsed;
+  // Sanity cap: never let a single resync jump the display by more than 18
+  // hours in one go — a clearly-corrupted stored timestamp shouldn't be able
+  // to instantly fabricate a huge "completed" session's worth of reward.
+  if(wallElapsed > 18 * 3600) return forestElapsed;
+  return wallElapsed > forestElapsed ? wallElapsed : forestElapsed;
+}
 let forestSetMins = 60; 
 let forestSetSecs = 0; 
 let forestAlertPlayed = false; 
@@ -6346,23 +6536,23 @@ let timerSubjects = [...BASE_TIMER_SUBJECTS];
 // untouched — only the presentation (and this new spendable apple currency) is new.
 // ═══════════════════════════════════════════
 const TREE_SPECIES = [
-  // ── Ordinary (10) — Garden Pine + Sakura Blossom unlocked by default, rest 40–90 🍎 ──
+  // ── Ordinary (10) — Garden Pine + Sakura Blossom unlocked by default (unchanged), rest flat 50 🍎 ──
   {id:'pine',   name:'Garden Pine',      tier:'ordinary', cost:0,   shapeType:'round',  palette:['#3d5640','#5d7d5f','#9cc2a3']},
   {id:'sakura', name:'Sakura Blossom',   tier:'ordinary', cost:40,  shapeType:'round',  palette:['#6b3f47','#c98a9c','#f3c9d6']},
-  {id:'ginkgo', name:'Golden Ginkgo',    tier:'ordinary', cost:48,  shapeType:'wide',   palette:['#7a5f28','#c9a34e','#f0d98a']},
-  {id:'maple',  name:'Autumn Maple',     tier:'ordinary', cost:55,  shapeType:'tall',   palette:['#6e2f1d','#c1602f','#e8985a']},
-  {id:'bamboo', name:'Ancient Bamboo',   tier:'ordinary', cost:62,  shapeType:'bamboo', palette:['#3f5a30','#7fa35e','#c3d98f']},
-  {id:'willow', name:'Moonlit Willow',   tier:'ordinary', cost:68,  shapeType:'willow', palette:['#26424a','#4f7d82','#a8cdd0']},
-  {id:'birch',  name:'Silver Birch',     tier:'ordinary', cost:74,  shapeType:'tall',   palette:['#4a6b3d','#7fa35c','#c9e0a0']},
-  {id:'oak',    name:'Emerald Oak',      tier:'ordinary', cost:80,  shapeType:'wide',   palette:['#2d4a2e','#4f7a4a','#8fb87a']},
-  {id:'plum',   name:'Plum Blossom',     tier:'ordinary', cost:86,  shapeType:'round',  palette:['#4a2e42','#a3567a','#e8a8c4']},
-  {id:'frost',  name:'Frostleaf Bamboo', tier:'ordinary', cost:90,  shapeType:'bamboo', palette:['#3a5560','#6f95a0','#c8e5ec']},
-  // ── Rare (5) — all locked, 150–500 🍎, each with its own special visual flourish ──
-  {id:'torii',     name:'Sacred Torii Pine', tier:'rare', cost:150, shapeType:'round',  palette:['#1c2820','#3d5940','#6f9270'], accent:'torii'},
-  {id:'celestial', name:'Celestial Blossom', tier:'rare', cost:220, shapeType:'round',  palette:['#2a2550','#5b4e9e','#c9b8f0'], accent:'sparkle'},
-  {id:'phoenix',   name:'Phoenix Maple',     tier:'rare', cost:300, shapeType:'tall',   palette:['#5a1f18','#c1432a','#f2984a'], accent:'ember'},
-  {id:'ethereal',  name:'Ethereal Willow',   tier:'rare', cost:380, shapeType:'willow', palette:['#1f3a45','#4a7d8a','#d8f0f5'], accent:'glow'},
-  {id:'bodhi',     name:'Golden Bodhi Tree', tier:'rare', cost:500, shapeType:'wide',   palette:['#4a3510','#9c7a2a','#f0d878'], accent:'lantern'}
+  {id:'ginkgo', name:'Golden Ginkgo',    tier:'ordinary', cost:50,  shapeType:'wide',   palette:['#7a5f28','#c9a34e','#f0d98a']},
+  {id:'maple',  name:'Autumn Maple',     tier:'ordinary', cost:50,  shapeType:'tall',   palette:['#6e2f1d','#c1602f','#e8985a']},
+  {id:'bamboo', name:'Ancient Bamboo',   tier:'ordinary', cost:50,  shapeType:'bamboo', palette:['#3f5a30','#7fa35e','#c3d98f']},
+  {id:'willow', name:'Moonlit Willow',   tier:'ordinary', cost:50,  shapeType:'willow', palette:['#26424a','#4f7d82','#a8cdd0']},
+  {id:'birch',  name:'Silver Birch',     tier:'ordinary', cost:50,  shapeType:'tall',   palette:['#4a6b3d','#7fa35c','#c9e0a0']},
+  {id:'oak',    name:'Emerald Oak',      tier:'ordinary', cost:50,  shapeType:'wide',   palette:['#2d4a2e','#4f7a4a','#8fb87a']},
+  {id:'plum',   name:'Plum Blossom',     tier:'ordinary', cost:50,  shapeType:'round',  palette:['#4a2e42','#a3567a','#e8a8c4']},
+  {id:'frost',  name:'Frostleaf Bamboo', tier:'ordinary', cost:50,  shapeType:'bamboo', palette:['#3a5560','#6f95a0','#c8e5ec']},
+  // ── Rare (5) — all locked, 100–300 🍎, each with its own special visual flourish ──
+  {id:'torii',     name:'Sacred Torii Pine', tier:'rare', cost:100, shapeType:'round',  palette:['#1c2820','#3d5940','#6f9270'], accent:'torii'},
+  {id:'celestial', name:'Celestial Blossom', tier:'rare', cost:150, shapeType:'round',  palette:['#2a2550','#5b4e9e','#c9b8f0'], accent:'sparkle'},
+  {id:'phoenix',   name:'Phoenix Maple',     tier:'rare', cost:200, shapeType:'tall',   palette:['#5a1f18','#c1432a','#f2984a'], accent:'ember'},
+  {id:'ethereal',  name:'Ethereal Willow',   tier:'rare', cost:250, shapeType:'willow', palette:['#1f3a45','#4a7d8a','#d8f0f5'], accent:'glow'},
+  {id:'bodhi',     name:'Golden Bodhi Tree', tier:'rare', cost:300, shapeType:'wide',   palette:['#4a3510','#9c7a2a','#f0d878'], accent:'lantern'}
 ];
 let unlockedTreeSpeciesSet = new Set(['pine','sakura']);
 let selectedTreeSpecies = 'pine';
@@ -7225,6 +7415,8 @@ function forestStart() {
   forestElapsed = 0;
   forestSetSecs = forestSetMins * 60;
   forestRunning = true;
+  fsPaused = false; // defensive: a fresh session must never inherit a stale paused flag
+  localStorage.removeItem('vm_timer_paused');
   forestSafetyCapUntil = Date.now() + 3000; // 3 second-er safety window
   forestAlertPlayed = false;
   forestOvertimeRepeatsPlayed = 0;
@@ -7252,8 +7444,8 @@ function forestStart() {
   scheduleUpcomingAlerts();
   scheduleServerAlarm(Date.now() + forestSetSecs * 1000, forestSetMins);
   startTimerStatusUpdates();
-  forestInterval = setInterval(() => {
-    forestElapsed++;
+forestInterval = setInterval(() => {
+    forestElapsed = Math.max(forestElapsed + 1, getWallClockElapsed());
     updateForestDisplay();
     if(typeof fsOpen !== 'undefined' && fsOpen && !fsPaused) fsPlayTick();
     updateTaskLinkedTimerDisplay();
@@ -7307,6 +7499,7 @@ async function forestStop() {
       updateForestDisplay();
       localStorage.removeItem('vm_timer_start');
       localStorage.removeItem('vm_timer_setmins');
+      localStorage.removeItem('vm_timer_paused');
       return;
     }
 
@@ -7354,6 +7547,7 @@ async function forestStop() {
       loadTimerStats();
       localStorage.removeItem('vm_timer_start');
       localStorage.removeItem('vm_timer_setmins');
+      localStorage.removeItem('vm_timer_paused');
       return;
     }
 
@@ -7400,6 +7594,7 @@ async function forestStop() {
     loadTimerStats();
     localStorage.removeItem('vm_timer_start');
     localStorage.removeItem('vm_timer_setmins');
+    localStorage.removeItem('vm_timer_paused');
   } finally {
     forestBusy = false;
     setStopButtonBusy(false);
@@ -8165,6 +8360,19 @@ async function updateProfile() {
   if(lvEl) lvEl.textContent = `LEVEL ${lv.level} · ${lv.name.toUpperCase()}`;
   const pdEl = document.getElementById('prof-pts-diamonds');
   if(pdEl) pdEl.textContent = `✨ ${xp} pts · 🌲 ${Math.round(Number(currentUserData.totalTreesPlanted) || 0)}`;
+  // Main points = Spent Time × 2 (the same "Spent Time" stat shown below,
+  // currentUserData.totalHours) — computed directly rather than derived by
+  // subtracting a challenge-points field from xp, so it can never drift out
+  // of sync no matter how challenge points were historically awarded.
+  const mainPts = Math.round((Number(currentUserData.totalHours) || 0) * 2);
+  const pbEl = document.getElementById('prof-pts-breakdown');
+  if(pbEl) {
+    computeMyWeeklyChallengePoints(currentUser.uid).then(weeklyChallengePts => {
+      if(document.getElementById('prof-pts-breakdown')) {
+        pbEl.textContent = `🎯 Main: ${mainPts} pts · ⚔️ Weekly Challenge: ${weeklyChallengePts} pts`;
+      }
+    });
+  }
   
   const nextLv = GUILD_LEVELS.find(l => l.level === lv.level + 1);
   const prevMin = lv.min;
@@ -9400,14 +9608,7 @@ function scheduleServerAlarm(finishAt, minutes) {
 
 function cancelServerAlarm() {
   if (!currentUser) return;
-  const url = `${ALARM_WORKER_URL}/cancel?uid=${currentUser.uid}`;
-  // sendBeacon browser-ke guarantee dey je request-ta page background/minimize
-  // hoye gele-o pathano hobe — fetch() majhpothe kete jete pare, sendBeacon jay na
-  if (navigator.sendBeacon) {
-    const ok = navigator.sendBeacon(url, new Blob([], { type: 'text/plain' }));
-    if (ok) return;
-  }
-  fetch(url, { method: 'POST', keepalive: true }).catch(() => {});
+  fetch(`${ALARM_WORKER_URL}/cancel?uid=${currentUser.uid}`, { method: 'POST' }).catch(() => {});
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -9568,6 +9769,9 @@ let timerStatusInterval = null;
 async function updateTimerStatusNotification() {
   if(!forestRunning || !('serviceWorker' in navigator) || Notification.permission !== 'granted') return;
   try {
+    // Notification dekhanor thik age forestElapsed-ke wall-clock diye self-correct
+    // kore neওয়া hocche — throttled interval-er upor r nirvor kore na
+    forestElapsed = getWallClockElapsed();
     const reg = await navigator.serviceWorker.ready;
     const elapsedMin = Math.floor(forestElapsed / 60);
     let title, body;
@@ -9609,9 +9813,6 @@ async function closeTimerStatusNotification() {
     notifs.forEach(n => n.close());
   } catch(e) {}
 }
-document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible' && forestRunning) updateTimerStatusNotification();
-});
 
 // Ambience only (tune + BGM). Does NOT touch scheduled alerts/keep-alive —
 // those are torn down explicitly only on real pause/stop (see below), so
@@ -9960,8 +10161,11 @@ function fsPause() {
     // Resume
     fsPaused = false;
     localStorage.removeItem('vm_timer_paused');
+    // vm_timer_start-take "ekhon theke" shift kore dicchi, jate pause-e katano
+    // shomoy-ta kokhono wall-clock resync-e "elapsed" hishebe count na hoy
+    localStorage.setItem('vm_timer_start', (Date.now() - forestElapsed * 1000).toString());
     forestInterval = setInterval(() => {
-      forestElapsed++;
+      forestElapsed = Math.max(forestElapsed + 1, getWallClockElapsed());
       updateForestDisplay();
       if(typeof fsOpen !== 'undefined' && fsOpen && !fsPaused) fsPlayTick();
       updateTaskLinkedTimerDisplay();
@@ -9974,7 +10178,8 @@ function fsPause() {
   } else {
     // Pause
     fsPaused = true;
-     localStorage.setItem('vm_timer_paused', '1');
+    localStorage.setItem('vm_timer_paused', '1');
+    localStorage.removeItem('vm_timer_start');
     clearInterval(forestInterval);
     stopAllTimerSounds();
     clearScheduledAlerts();
@@ -10018,22 +10223,53 @@ async function fsStop() {
 }
 
 
-// Background timer re-sync via Page Visibility API
-document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible' && forestRunning && !fsPaused && localStorage.getItem('vm_timer_paused') !== '1') {
-    const startTs = parseInt(localStorage.getItem('vm_timer_start') || '0');
-    if(startTs) {
-      const elapsed = Math.floor((Date.now() - startTs) / 1000);
-      if(elapsed > forestElapsed) { forestElapsed = elapsed; updateForestDisplay(); }
-    }
-    if(forestElapsed >= forestSetSecs && !forestAlertPlayed) {
-      forestAlertPlayed = true;
-      try { new Audio('audio/Timer Alert.mp3').play().catch(() => {}); } catch(e) {}
-      showAlertNotification();
-      scheduleUpcomingAlerts();
-    }
+// ── Foreground re-sync (single source of truth) ──────────────────────────
+// Screen off / app minimize / background tab can freeze or fully suspend JS
+// execution on mobile. When the app becomes active again we NEVER trust the
+// value setInterval() left behind — we always re-derive it from the real
+// clock (getWallClockElapsed(), which reads the stored start timestamp).
+// This one function is now the ONLY place that reacts to "app is active
+// again" — it used to be split across two separate visibilitychange
+// listeners (one only refreshed the notification-bar status, the other did
+// the actual elapsed-time correction), which was fragile and easy to drift
+// out of sync. It's also wired to 'pageshow' (bfcache restore) and 'focus'
+// as extra safety nets, since visibilitychange alone can be unreliable
+// inside some Android/iOS PWA shells — a guard below makes calling it twice
+// for the same wake-up harmless.
+let lastForegroundResyncAt = 0;
+function resyncTimerOnForeground() {
+  const now = Date.now();
+  if(now - lastForegroundResyncAt < 250) return; // debounce: visibilitychange+focus+pageshow can all fire together
+  lastForegroundResyncAt = now;
+
+  if(!forestRunning) return;
+
+  if(fsPaused) {
+    // Timer is genuinely paused — must NOT advance even a second. Just make
+    // sure the status notification reflects "Paused" and leave elapsed alone.
+    updateTimerStatusNotification();
+    return;
   }
+
+  const corrected = getWallClockElapsed();
+  if(corrected > forestElapsed) {
+    forestElapsed = corrected;
+    updateForestDisplay();
+    updateTaskLinkedTimerDisplay();
+  }
+  if(forestElapsed >= forestSetSecs && !forestAlertPlayed) {
+    forestAlertPlayed = true;
+    try { new Audio('audio/Timer Alert.mp3').play().catch(() => {}); } catch(e) {}
+    showAlertNotification();
+    scheduleUpcomingAlerts();
+  }
+  updateTimerStatusNotification();
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible') resyncTimerOnForeground();
 });
+window.addEventListener('pageshow', () => { resyncTimerOnForeground(); });
+window.addEventListener('focus', () => { resyncTimerOnForeground(); });
 
 // গ্লোবাল ভ্যারিয়েবল চার্টগুলোর ইন্সট্যান্স ধরে রাখার জন্য
 let advancedCharts = {};
@@ -10054,7 +10290,8 @@ const CHART_FULLSCREEN_MAP = {
   subjectStrengthChart: { key: 'strength',      title: '📚 Subject Strength (This Month)' },
   scoreTrendChart:      { key: 'scoreTrend',    title: '📖 Productivity Score (30-Day Trend)' },
   examStackChart:       { key: 'stack',         title: '🏆 Exam Readiness' },
-  timeOfDayChart:       { key: 'timeOfDay',     title: '⏰ Time of Day Productivity' }
+  timeOfDayChart:       { key: 'timeOfDay',     title: '⏰ Time of Day Productivity' },
+  weeklyChallengeChart: { key: 'weeklyChallenge', title: '🏯 Guild Challenge History — Target vs Achieved' }
 };
 
 function addChartFullscreenButtons() {
@@ -10671,6 +10908,79 @@ async function initAdvancedAnalytics() {
       }
     });
   }
+
+  // --- Weekly Guild Challenge History (Target vs Achieved, last 10 weeks) ---
+  try {
+    const wcSnap = await db.collection('weeklyChallenges').get();
+    const wcDocs = wcSnap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .slice(-10);
+
+    const wcLabels = [];
+    const wcTarget = [];
+    const wcAchieved = [];
+    const wcAchievedColors = []; // distinct color when that week's target was actually reached
+    const wcStatus = []; // for the summary line below the chart
+    let wcCompletedCount = 0;
+
+    for(const doc of wcDocs) {
+      const monDate = new Date(doc.id + 'T00:00:00');
+      const sunDate = new Date(monDate.getTime() + 6 * 86400000 + (23 * 3600 + 59 * 60 + 59) * 1000);
+      const perUser = await computeContributionsForRange(monDate.getTime(), sunDate.getTime());
+      const achieved = Object.values(perUser).reduce((a, b) => a + b, 0);
+      const target = doc.targetHours || 0;
+      const reached = achieved >= target && target > 0;
+      wcLabels.push(monDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }));
+      wcTarget.push(target);
+      wcAchieved.push(Number(achieved.toFixed(1)));
+      wcAchievedColors.push(reached ? '#e5c07b' : '#88b394'); // gold = target reached, green = not yet
+      if(reached) wcCompletedCount++;
+      const fullyClaimed = isChallengeFullyClaimed(doc);
+      wcStatus.push(reached ? (fullyClaimed ? '✅ Completed & claimed' : '🔒 Completed, awaiting claim') : '— Not reached');
+    }
+
+    const summaryEl = document.getElementById('weekly-challenge-summary');
+    if(summaryEl) {
+      summaryEl.textContent = wcDocs.length
+        ? `Last ${wcDocs.length} week(s) shown · 🟡 gold bar = target reached · 🟢 green bar = not reached`
+        : 'No guild challenges set yet';
+    }
+    const badgeEl = document.getElementById('weekly-challenge-completed-badge');
+    if(badgeEl) badgeEl.textContent = `✅ ${wcCompletedCount}/${wcDocs.length} completed`;
+
+    const ctxWeeklyChallenge = document.getElementById('weeklyChallengeChart');
+    if(ctxWeeklyChallenge) {
+      advancedCharts.weeklyChallenge = new Chart(ctxWeeklyChallenge, {
+        type: 'bar',
+        data: {
+          labels: wcLabels.length ? wcLabels : ['No Data'],
+          datasets: [
+            { label: 'Target (h)', data: wcTarget.length ? wcTarget : [0], backgroundColor: 'rgba(229,192,123,0.35)', borderColor: '#e5c07b', borderWidth: 1.5 },
+            { label: 'Achieved (h)', data: wcAchieved.length ? wcAchieved : [0], backgroundColor: wcAchievedColors.length ? wcAchievedColors : ['#88b394'] }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: textColor, font: { size: 11 } } },
+            y: { grid: { color: gridColor }, ticks: { color: textColor } }
+          },
+          plugins: {
+            legend: { position: 'bottom', labels: { color: textColor } },
+            tooltip: {
+              callbacks: {
+                afterBody: (items) => {
+                  const i = items[0]?.dataIndex;
+                  return i !== undefined && wcStatus[i] ? 'Status: ' + wcStatus[i] : '';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  } catch(e) { console.error('Weekly Guild Challenge history chart failed:', e); }
 }
 
 // --- ৫. Productivity Score (Journal) 30-Day Trend ---
