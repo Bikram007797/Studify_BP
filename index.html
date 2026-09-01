@@ -7153,10 +7153,10 @@ function getForestTimePhase(d) {
 }
 function getForestSeason(d) {
   const m = d.getMonth() + 1; // 1-12
-  if(m === 12 || m <= 2) return 'winter';
-  if(m >= 3 && m <= 6) return 'summer';
-  if(m >= 7 && m <= 9) return 'monsoon';
-  return 'autumn'; // Oct, Nov
+  if(m === 12 || m <= 2) return 'winter';  // dec-feb
+  if(m >= 3 && m <= 5) return 'summer';    // mar-may
+  if(m >= 6 && m <= 8) return 'monsoon';   // jun-aug
+  return 'autumn'; // sept- Nov
 }
 let forestSkyState = { phase: null, season: null };
 function renderForestSky() {
