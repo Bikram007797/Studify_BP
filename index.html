@@ -2010,6 +2010,30 @@ border: 2px solid #3d6b4a; background: #0f1a12; color: var(--accent-green);
 .drawer-tab-icon { font-size: 1.2rem; width: 24px; text-align: center; }
 .drawer-tab-arrow { margin-left: auto; font-size: 0.79rem; color: var(--text-muted); }
 
+.live-toggle-switch { position: relative; display: inline-block; width: 42px; height: 24px; margin-left: auto; flex-shrink: 0; }
+.live-toggle-switch input { opacity: 0; width: 0; height: 0; }
+.live-toggle-slider {
+  position: absolute; cursor: pointer; inset: 0;
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: 24px; transition: 0.25s;
+}
+.live-toggle-slider::before {
+  content: ''; position: absolute; height: 18px; width: 18px; left: 2px; top: 2px;
+  background: var(--text-muted); border-radius: 50%; transition: 0.25s;
+}
+.live-toggle-switch input:checked + .live-toggle-slider { background: rgba(95,214,116,0.25); border-color: #5fd674; }
+.live-toggle-switch input:checked + .live-toggle-slider::before { transform: translateX(18px); background: #5fd674; }
+
+.home-live-badges { display: none; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.home-live-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(95,214,116,0.12); border: 1px solid rgba(95,214,116,0.4);
+  color: #5fd674; font-size: 0.78rem; font-weight: 700;
+  padding: 5px 12px; border-radius: 20px;
+}
+.home-live-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd674; animation: live-pulse 1.6s ease-in-out infinite; }
+@keyframes live-pulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(95,214,116,0.5); } 50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(95,214,116,0); } }
+
 /* Drawer Body */
 .drawer-body {
   flex: 1; overflow-y: auto; padding: 0;
@@ -2728,6 +2752,7 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
       <div class="home-greeting-text" id="home-greeting-text">Good morning, Scholar</div>
       <div class="home-greeting-sub" id="home-greeting-sub">✨ Small steps, steady growth.</div>
     </div>
+    <div class="home-live-badges" id="home-live-badges"></div>
     <div class="home-exam-box" id="home-exam-box">
       <div class="home-exam-label" id="home-exam-label">Next Exam</div>
       <div class="home-exam-name" id="home-exam-name">—</div>
@@ -3765,6 +3790,14 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
     <span class="drawer-tab-arrow">›</span>
   </div>
 </div>
+<div class="drawer-tab" style="cursor:default">
+  <span class="drawer-tab-icon">🟢</span>
+  <span>Live Status</span>
+  <label class="live-toggle-switch">
+    <input type="checkbox" id="live-status-toggle" onchange="toggleLiveStatus()">
+    <span class="live-toggle-slider"></span>
+  </label>
+</div>
 
   <!-- 🍃 Leave Village at bottom of drawer -->
 <div class="drawer-footer" style="margin-top:auto;display:flex;justify-content:center">
@@ -4296,6 +4329,7 @@ async function startListeners() {
       try { renderMockTestGraphs(); } catch(e) { console.error('renderMockTestGraphs failed:', e); }
       try { if(currentCourseId) refreshCourseDetail(); } catch(e) { console.error('refreshCourseDetail failed:', e); }
       try { updateReportCard(); } catch(e) { console.error('updateReportCard failed:', e); }
+      try { renderLiveBadges(); } catch(e) { console.error('renderLiveBadges failed:', e); }
     }
   });
 
@@ -4313,6 +4347,7 @@ async function startListeners() {
 const allUsersSnap = await db.collection('users').get();
 allUsersData = allUsersSnap.docs.map(d => ({id: d.id, ...d.data()}));
 partnerData = allUsersData.find(u => u.id !== currentUser.uid) || null;
+try { renderLiveBadges(); } catch(e) { console.error('renderLiveBadges failed:', e); }
 
 let u3 = () => {};
 if(partnerData) {
@@ -4322,6 +4357,7 @@ if(partnerData) {
       allUsersData = allUsersData.map(u => u.id === partnerData.id ? partnerData : u);
       if(document.getElementById('tab-analytics').classList.contains('active')) {
         updateAnalytics();
+        try { renderLiveBadges(); } catch(e) { console.error('renderLiveBadges failed:', e); }
       }
     }
   });
@@ -8324,6 +8360,28 @@ function renderHomeGreeting() {
 // ═══════════════════════════════════════════
 // PROFILE STATS SUMMARY
 // ═══════════════════════════════════════════
+async function toggleLiveStatus() {
+  if(!currentUser) return;
+  const cb = document.getElementById('live-status-toggle');
+  const newState = cb.checked;
+  try {
+    await db.collection('users').doc(currentUser.uid).update({ isLive: newState });
+  } catch(e) {
+    cb.checked = !newState; // ব্যর্থ হলে toggle আগের অবস্থায় ফিরিয়ে দাও
+    toast('❌ ' + e.message);
+  }
+}
+
+function renderLiveBadges() {
+  const box = document.getElementById('home-live-badges');
+  if(!box) return;
+  const liveNames = [];
+  if(currentUserData?.isLive) liveNames.push(currentUserData.name || 'Someone');
+  if(partnerData?.isLive) liveNames.push(partnerData.name || 'Someone');
+  if(!liveNames.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  box.style.display = 'flex';
+  box.innerHTML = liveNames.map(name => `<div class="home-live-badge"><span class="dot"></span>${name} Live</div>`).join('');
+}
 async function updateProfile() {
   if(!currentUserData) return;
   const xp = currentUserData.xp || 0;
@@ -8824,6 +8882,8 @@ function updateDrawerHeader() {
   else avEl.textContent = (currentUserData.name || '?').charAt(0).toUpperCase();
 
 document.getElementById('drawer-name').textContent = currentUserData.name || '—';
+const liveCb = document.getElementById('live-status-toggle');
+if(liveCb) liveCb.checked = !!currentUserData.isLive;
   document.getElementById('drawer-level').textContent = 'Lv.' + lv.level;
   document.getElementById('drawer-level-name').textContent = lv.name;
   document.getElementById('drawer-rank').textContent = rank.name;
