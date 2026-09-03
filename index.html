@@ -2988,7 +2988,7 @@ background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-deep) 100%);
   <div id="tab-timer" class="tab-content">
       <div class="timer-live-row">
   <span style="font-size:1.1rem">🟢</span>
-  <span style="font-weight:600;font-size:0.88rem;color:var(--text-secondary);flex:1">Mark me as Live</span>
+  <span style="font-weight:600;font-size:0.88rem;color:var(--text-secondary);flex:1">Are you giving Mock Test?</span>
   <label class="live-toggle-switch">
     <input type="checkbox" id="live-status-toggle" onchange="toggleLiveStatus()">
     <span class="live-toggle-slider"></span>
@@ -7730,12 +7730,12 @@ async function getTotalFocusHours(forceRefresh) {
 // lastSeenAnnouncement won't match the new ID) will see it once again; users
 // who already saw an older one won't see it a second time for that same ID.
 // ═══════════════════════════════════════════════════════════
-const CURRENT_ANNOUNCEMENT_ID = 'safety-cap-forest-redesign-v1';
+const CURRENT_ANNOUNCEMENT_ID = 'mark-as-live-button';
 const CURRENT_ANNOUNCEMENT = {
-  title: '🛡️ নতুন Update: Timer Safety Cap + 🌲 নতুন Forest Look!',
-  body: `ভুল করে Start বাটনে চাপ পড়ে গেলেও আর চিন্তা নেই — এখন Timer শুরু হওয়ার পর <b>৩ সেকেন্ডের একটা Safety Window</b> থাকবে। এই সময়ের মধ্যে Stop চাপলে কোনো penalty 🌲 লাগবে না, session-ও কোথাও count হবে না — একদম যেন কিছুই হয়নি। এটা Timer ট্যাব আর Task-এর সাথে যুক্ত Timer, দুই জায়গাতেই কাজ করবে।<br><br>
-    আর তোমার Forest-টাও পুরোপুরি নতুন করে সাজানো হয়েছে 🌿 — এখন গাছগুলো একটা <b>isometric 3D ground tile</b>-এর উপর সুন্দর সারিবদ্ধভাবে 🌲বসানো থাকে, আগের মতো এলোমেলোভাবে ছড়ানো না। প্রতিটা গাছের ডিজাইনও একদম নতুন করে আঁকা হয়েছে — আর Rare গাছগুলোতে এখন বিশেষ একটা glow আছে, যাতে এক নজরেই বোঝা যায় কোনটা special।<br><br>
-    Timer ট্যাবে গিয়ে একবার ঘুরে দেখে এসো!🌿`
+ title: '🛡 নতুন Update: "Live Button" in Timer Section!',
+  body: একই সাথে একই Platform এ Mock test 🧑‍💻দিচ্ছেন, logout হয়ে যাওয়ার ভয়, চিন্তা নেই এখন Timer Section এ একটা Toggle button⏹️ পাবেন, <b>যেটা Press করলে নিজেকে Live 🟢 status দেখাবে </b> এতে অন্য User রা সহজে বুঝতে পারবে আপনি এখন Mock test দিচ্ছেন, তাই সে ভুল করেও login করবে না।<br><br>
+    Mock Test শুরু করার আগে Timer Section এ Toggle button টা ON ⏹️ করতে ভুলবেন না যেনো। <b>আপনার সাথে বাকিরাও দেখতে পাবে কে কখন Mock Test দিচ্ছে, এতে আর confusion এর কোনো জাগাই থাকবে না। Mock Test daoa hoye gele Button ta OFF korte vulben na jeno. </b><br>
+    Timer⏲️ ট্যাবে গিয়ে একবার ঘুরে দেখে আসুন!🌿
     };
 let featureAnnouncementChecked = false;
 function checkFeatureAnnouncement() {
